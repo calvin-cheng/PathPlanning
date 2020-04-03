@@ -129,9 +129,10 @@ class Maze:
 def main(stdscr):
     stdscr.clear()
     curses.curs_set(0)
+    curses.use_default_colors()
 
     # (i, fg, bg), i >= 1 for some reason
-    curses.init_pair(1, curses.COLOR_BLACK, curses.COLOR_BLACK)  # Gap
+    curses.init_pair(1, curses.COLOR_BLACK, -1)  # Gap
     curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_WHITE)  # Wall 
     curses.init_pair(3, curses.COLOR_RED, curses.COLOR_RED)    # Player
     curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_YELLOW) # Path
@@ -141,7 +142,7 @@ def main(stdscr):
     
     m.draw(stdscr)
     string = "(S)earch   |   (Q)uit"
-    stdscr.addstr(h//2 + m.l//2 + 3, w//2 - len(string)//2, string)
+    stdscr.addstr(h//2 + m.l//2 + 2, w//2 - len(string)//2, string)
 
     while True:
         h, w = stdscr.getmaxyx()
