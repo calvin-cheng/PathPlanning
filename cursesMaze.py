@@ -33,15 +33,15 @@ class Maze:
         h, w = stdscr.getmaxyx()
         for i in range(self.w):
             for j in range(self.l):
-                # char = u'\u25a0' if self.board[j][i] else ' '
+                char = '  ' #u'\u25a0'*2 if self.board[j][i] else '  '
                 stdscr.attron(curses.color_pair(self.board[j][i] + 1))
-                stdscr.addch(h//2 - self.l//2 + j, 
-                             w//2 - self.w//2 + i, 
-                             ' ')
+                stdscr.addstr(h//2 - self.l//2 + j, 
+                             w//2 - self.w + i*2, 
+                             char)
                 stdscr.attroff(curses.color_pair(self.board[j][i] + 1))
 
         stdscr.addch(h//2 - self.l//2 + self.playerPos[0],
-                     w//2 - self.w//2 + self.playerPos[1],
+                     w//2 - self.w + self.playerPos[1]*2,
                      '*')
         stdscr.refresh()
         
@@ -83,7 +83,7 @@ class Maze:
 
     def movePlayer(self, direction):
         '''Moves player if valid'''
-        dirs = {'U': [-1, 0], 'D': [1, 0], 'L': [0, -2], 'R': [0, 2]}
+        dirs = {'U': [-1, 0], 'D': [1, 0], 'L': [0, -1], 'R': [0, 1]}
         wallCheck = {'U': [-1, 0], 'D': [1, 0], 'L': [0, -1], 'R': [0, 1]}
         dY, dX = dirs[direction]
         wY, wX = wallCheck[direction]
@@ -103,7 +103,7 @@ def main(stdscr):
     curses.init_pair(2, curses.COLOR_RED, curses.COLOR_WHITE) # Wall 
 
     h, w = stdscr.getmaxyx()
-    m = Maze(h//4, w//4)
+    m = Maze(h//4, w//8)
     
     m.draw(stdscr)
     string = "(Q)uit"
