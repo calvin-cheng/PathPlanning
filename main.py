@@ -37,25 +37,20 @@ class Maze:
         for i in range(self.w):
             for j in range(self.l):
                 if self.board[j][i] == 1: # Wall
-                    #char = u'\u25a0'
-                    char = '  '
-                    colorIdx = 2
+                    string = '  '
+                    attr = curses.color_pair(1) | curses.A_BOLD | curses.A_STANDOUT
                 elif self.board[j][i] == 2: # Path
-                    char = '  '
-                    colorIdx = 4
+                    string = '  '
+                    attr = curses.color_pair(4)
                 else: # self.board[j][i] == 0 # Gap
-                    char = '  '
-                    colorIdx = 1
-                stdscr.attron(curses.color_pair(colorIdx))
-                stdscr.addstr(h//2 - self.l//2 + j, w//2 - self.w + i*2, char)
-                stdscr.attroff(curses.color_pair(colorIdx))
+                    string = '  '
+                    attr = curses.color_pair(1)
+                stdscr.addstr(h//2 - self.l//2 + j, w//2 - self.w + i*2, string, attr)
 
         # Draw player
-        stdscr.attron(curses.color_pair(3))
-        stdscr.addstr(h//2 - self.l//2 + self.playerPos[0],
-                     w//2 - self.w + self.playerPos[1]*2,
-                     '  ')
-        stdscr.attroff(curses.color_pair(3))
+        stdscr.addstr(h//2 - self.l//2 + self.playerPos[1],
+                     w//2 - self.w + self.playerPos[0]*2,
+                     '  ', curses.color_pair(3))
         stdscr.refresh()
         
     def generate(self):
@@ -69,8 +64,10 @@ class Maze:
         startX, endX = 1, self.w-2
         self.board[0][startX] = 0
         self.board[-1][endX] = 0
-        self.playerPos = [0, startX]
-        self.goal = [self.l-1, endX]
+        self.playerPos = (startX, 0)
+#         self.playerPos = [0, startX]
+#         self.goal = [self.l-1, endX]
+        self.goal = (endX, self.l - 1)
 
         return self.board, self.playerPos, self.goal
 
@@ -87,8 +84,16 @@ class Maze:
                         self.board[y][x] = 0
                 self.carve(X+dX, Y+dY)
 
+    def clearPath(self):
+        '''Removes path nodes from board'''
+        for i in range(self.w):
+            for j in range(self.l):
+                if self.board[j][i] == 2:
+                    self.board[j][i] = 0
+
+
     def inBoard(self, x, y):
-        '''Helper function that returns TRUE if (x,y) is valid.'''
+        '''Helper function that returns TRUE if (x, y) is valid.'''
         if (x >= 0 and x < self.w) and (y >= 0 and y < self.l):
             result = True
         else:
@@ -116,12 +121,10 @@ class Maze:
     def movePlayer(self, direction):
         '''Moves player if valid'''
         dirs = {'U': [-1, 0], 'D': [1, 0], 'L': [0, -1], 'R': [0, 1]}
-#         wallCheck = {'U': [-1, 0], 'D': [1, 0], 'L': [0, -1], 'R': [0, 1]}
         dY, dX = dirs[direction]
-#         wY, wX = wallCheck[direction]
-        pY, pX = self.playerPos
+        pX, pY = self.playerPos
         if self.inBoard(pX+dX, pY+dY) and self.board[pY+dY][pX+dX] != 1:
-            self.playerPos = [pY+dY, pX+dX]
+            self.playerPos = (pX+dX, pY+dY)
 
     def checkWin(self):
         return self.playerPos == self.goal
@@ -131,8 +134,8 @@ def main(stdscr):
     curses.curs_set(0)
     curses.use_default_colors()
 
-    # (i, fg, bg), i >= 1 for some reason
-    curses.init_pair(1, curses.COLOR_BLACK, -1)  # Gap
+    # (i, fg, bg), 0 reserved. fg, bg = -1 for default values
+    curses.init_pair(1, -1, -1)  # Gap
     curses.init_pair(2, curses.COLOR_WHITE, curses.COLOR_WHITE)  # Wall 
     curses.init_pair(3, curses.COLOR_RED, curses.COLOR_RED)    # Player
     curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_YELLOW) # Path
@@ -142,7 +145,8 @@ def main(stdscr):
     
     m.draw(stdscr)
     string = "(S)earch   |   (Q)uit"
-    stdscr.addstr(h//2 + m.l//2 + 2, w//2 - len(string)//2, string)
+    stdscr.addstr(h//2 + m.l//2 + 2, w//2 - len(string)//2, string,
+                  curses.A_BOLD)
 
     while True:
         h, w = stdscr.getmaxyx()
@@ -163,9 +167,10 @@ def main(stdscr):
             curses.curs_set(1)
             break
         elif key == ord('s'):
+            m.clearPath()
             d = Djikstra(m)
             # TODO: fix naming conventions (playerPos in [Y, X], nodes in (X, Y))
-            path = d.search((m.playerPos[1],m.playerPos[0]), (m.goal[1],m.goal[0]))
+            path = d.search(m.playerPos, m.goal)
             for node in path:
                 i, j = node
                 time.sleep(0.04)
