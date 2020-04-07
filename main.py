@@ -1,7 +1,7 @@
 import curses
 import time
 import random
-from objects.PathPlanners import Djikstra
+from objects.PathPlanners import Djikstra, AStar
 from objects.Board import Board
 
 def main(stdscr):
@@ -11,15 +11,16 @@ def main(stdscr):
 
     # (i, fg, bg), 0 reserved. fg, bg = -1 for default values
     curses.init_pair(1, -1, -1)  # Gap
-    curses.init_pair(2, curses.COLOR_RED, curses.COLOR_RED)    # Player
-    curses.init_pair(3, curses.COLOR_GREEN, curses.COLOR_GREEN) # Goal
+    curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_RED)    # Player
+    curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_GREEN) # Goal
     curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_YELLOW) # Path
+    curses.init_pair(5, curses.COLOR_MAGENTA, curses.COLOR_WHITE) # Visited
 
     h, w = stdscr.getmaxyx()
     m = Board(h//3, w//6)
     
     m.draw(stdscr)
-    string = "(M)azify | (R)eset | (S)earch | (Q)uit"
+    string = "(M)azify | (C)lear path | (R)eset | (S)earch | (Q)uit"
     stdscr.addstr(h//2 + m.l//2, w//2 - len(string)//2, string,
                   curses.A_BOLD)
 
@@ -44,7 +45,7 @@ def main(stdscr):
         elif key == ord('s'):
             m.clearPath()
             d = Djikstra(m)
-            path = d.search(m.player, m.goal)
+            path = d.search(m.player, m.goal, stdscr)
             for node in path:
                 i, j = node
                 time.sleep(0.04)
@@ -55,6 +56,9 @@ def main(stdscr):
             m.draw(stdscr)
         elif key == ord('r'):
             m.generate()
+            m.draw(stdscr)
+        elif key == ord('c'):
+            m.clearPath()
             m.draw(stdscr)
 
         if m.checkWin():

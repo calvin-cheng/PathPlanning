@@ -6,6 +6,7 @@ class Board:
         self.l = (length * 2 - 1) + 2
         self.w = (width * 2 - 1) + 2
         self.board = [[0 for _ in range(self.w)] for _ in range(self.l)]
+#        self.player = (self.w - 22, self.l - 22)
         self.player = (1, 1)
         self.goal = (self.w - 2, self.l - 2)
         self.generate()
@@ -34,15 +35,21 @@ class Board:
         # Double horizontal spacing for better aspect ratio
         for i in range(self.w):
             for j in range(self.l):
-                if self.board[j][i] == 1: # Wall
+                if self.board[j][i] == 0: # Gap
+                    string = '  '
+                    attr = curses.color_pair(1)
+                elif self.board[j][i] == 1: # Wall
                     string = '  '
                     attr = curses.color_pair(1) | curses.A_BOLD | curses.A_STANDOUT
                 elif self.board[j][i] == 2: # Path
                     string = '  '
                     attr = curses.color_pair(4)
-                elif self.board[j][i] == 0: # Gap
+                elif self.board[j][i] == 3: # Visited
                     string = '  '
-                    attr = curses.color_pair(1)
+                    attr = curses.color_pair(5)
+                elif self.board[j][i] == 4: # Marked
+                    string = '  '
+                    attr = curses.color_pair(6)
 
                 stdscr.addstr(h//2 - self.l//2 + j - 2, w//2 - self.w + i*2, string, attr)
 
@@ -96,7 +103,7 @@ class Board:
         '''Removes path nodes from board'''
         for i in range(self.w):
             for j in range(self.l):
-                if self.board[j][i] == 2:
+                if self.board[j][i] != 1:
                     self.board[j][i] = 0
 
     def inBoard(self, x, y):
