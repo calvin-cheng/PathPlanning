@@ -73,17 +73,20 @@ class Board:
     def mazify(self):
         '''Generates random maze using DFS and moves player to start'''
         import random
+
         self.board = [[1 for _ in range(self.w)] for _ in range(self.l)]
         X, Y = random.randrange(1,self.w - 1,2), random.randrange(1,self.l - 1,2)
         self.board[Y][X] = 0
         self.carve(X,Y)
 
-        # Set start and valid positions, move player to start
-        startX, endX = 1, self.w-2
-        self.board[0][startX] = 0
-        self.board[-1][endX] = 0
-        self.player = (startX, 0)
-        self.goal = (endX, self.l - 1)
+        # Move player and goal if they're in a wall
+        if self.board[self.player[1]][self.player[0]] == 1:
+            nbrs = self.getNeighbours(self.player)
+            self.player = nbrs[0]
+
+        if self.board[self.goal[1]][self.goal[0]] == 1:
+            nbrs = self.getNeighbours(self.goal)
+            self.goal = nbrs[0]
 
     def carve(self, X, Y):
         '''Helper recursive function for DFS maze generation.
