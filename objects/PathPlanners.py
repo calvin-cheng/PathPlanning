@@ -3,7 +3,7 @@ import curses
 import math
 
 
-class Djikstra:
+class Dijkstra:
     def __init__(self, board):
         self.board = board
 
@@ -30,11 +30,8 @@ class Djikstra:
 
             nbrs = self.board.getNeighbours(cur)
             for nbr in nbrs:
-                dir2cur = self.getDirection(prevs[cur], cur)
-                dir2nbr = self.getDirection(cur, nbr)
-                dirCost = abs(dir2nbr - dir2cur) % 2
-
-                cost2nbr = costs[cur] + self.getCost(cur, nbr) + dirCost
+                turnCost = self.isTurn(prevs[cur], nbr)
+                cost2nbr = costs[cur] + self.getCost(cur, nbr) + turnCost
                 if nbr not in costs or cost2nbr < costs[nbr]:
                     # Relax costs if cost is lower
                     self.board[nbr[1]][nbr[0]] = 4 # Mark as "frontier"
@@ -60,17 +57,14 @@ class Djikstra:
         node2: (x, y) tuple
         '''
         return abs(node1[0] - node2[0]) + abs(node1[1] - node2[1])
-    
-    def getDirection(self, node1, node2):
-        '''Finds the bearing from node1 to node 2
-        OUTPUT: 0: North, 1: East, 2: South, 3: West
-        '''
+
+    def isTurn(self, node1, node2):
+        '''Finds if nodes lie on same line. If not, there's a turn'''
         if node1 is None or node2 is None:
             return 0
-        dirs = {(0, 1): 0, (1, 0): 1, (0, -1): 2, (-1, 0): 3} # N E S W
-        dx = node1[0] - node2[0]
-        dy = node1[1] - node2[1]
-        return dirs[(dx, dy)]
+        if node1[0] == node2[0] or node1[1] == node2[1]:
+            return 0
+        return 1
 
 
 class AStar:

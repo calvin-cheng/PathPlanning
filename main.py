@@ -1,6 +1,6 @@
 import curses
 import time
-from objects.PathPlanners import Djikstra, AStar
+from objects.PathPlanners import Dijkstra, AStar
 from objects.Board import Board
 
 def main(stdscr):
@@ -59,7 +59,7 @@ def main(stdscr):
             break
         elif key == ord('s'):
             m.clearPath()
-            d = Djikstra(m)
+            d = Dijkstra(m)
             path = d.search(m.player, m.goal, stdscr)
             for node in path:
                 i, j = node
