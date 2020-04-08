@@ -125,8 +125,8 @@ class Board:
         dirs = [(0, 1), (1, 0), (0, -1), (-1, 0)]
         neighbours = []
         for dx, dy in dirs:
-            if self.inBoard(x + dx, y + dy) and self.board[y+dy][x+dx] != 1:
-                neighbours.append((x + dx, y + dy))
+            if self.inBoard(x+dx, y+dy) and self.board[y+dy][x+dx] != 1:
+                neighbours.append((x+dx, y+dy))
         return neighbours
 
     def __getitem__(self, i):
@@ -135,13 +135,20 @@ class Board:
     def __len__(self):
         return len(self.board)
 
-    def movePlayer(self, direction):
-        '''Moves player if valid'''
+    def moveNode(self, node, direction):
+        '''Moves node in specified direction.'''
         dirs = {'U': [-1, 0], 'D': [1, 0], 'L': [0, -1], 'R': [0, 1]}
-        dY, dX = dirs[direction]
-        pX, pY = self.player
-        if self.inBoard(pX+dX, pY+dY) and self.board[pY+dY][pX+dX] != 1:
-            self.player = (pX+dX, pY+dY)
+        dy, dx = dirs[direction]
+        x, y = node
+        if self.inBoard(x+dx, y+dy) and self.board[y+dy][x+dx] != 1:
+            # If node is a player or goal, move that instead. 
+            if node == self.player:
+                self.player = (x+dx, y+dy)
+            elif node == self.goal:
+                self.goal = (x+dx, y+dy)
+            else:
+                # Otherwise move wall
+                self.board[y][x], self.board[y+dy][x+dx] = self.board[y+dy][x+dx], self.board[y][x]
 
     def checkWin(self):
         return self.player == self.goal

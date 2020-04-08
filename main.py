@@ -18,26 +18,41 @@ def main(stdscr):
 
     h, w = stdscr.getmaxyx()
     m = Board(h//3, w//6)
+    move = True # True: move player, False: move goal
     
     m.draw(stdscr)
-    string = "(M)azify | (C)lear path | (R)eset | (S)earch | (Q)uit"
+    string = "(T)oggle | (M)azify | (C)lear path | (R)eset | (S)earch | (Q)uit"
     stdscr.addstr(h//2 + m.l//2, w//2 - len(string)//2, string,
                   curses.A_BOLD)
 
     while True:
         h, w = stdscr.getmaxyx()
+        status = "Moving: Start" if move else "Moving: Goal "
+        stdscr.addstr(h//2 + m.l//2 + 1, w//2 - len(status)//2, status,
+                      curses.A_BOLD)
+        if move:
+            toMove = m.player
+        else:
+            toMove = m.goal
+            
         key = stdscr.getch()
+
+        if move:
+            toMove = m.player
+        else:
+            toMove = m.goal
+
         if key == curses.KEY_UP:
-            m.movePlayer('U')
+            m.moveNode(toMove, 'U')
             m.draw(stdscr)
         elif key == curses.KEY_DOWN:
-            m.movePlayer('D')
+            m.moveNode(toMove, 'D')
             m.draw(stdscr)
         elif key == curses.KEY_RIGHT:
-            m.movePlayer('R')
+            m.moveNode(toMove, 'R')
             m.draw(stdscr)
         elif key == curses.KEY_LEFT:
-            m.movePlayer('L')
+            m.moveNode(toMove, 'L')
             m.draw(stdscr)
         elif key == ord('q'):
             curses.curs_set(1)
@@ -60,6 +75,8 @@ def main(stdscr):
         elif key == ord('c'):
             m.clearPath()
             m.draw(stdscr)
+        elif key == ord('t'):
+            move = not(move)
 
         if m.checkWin():
             stdscr.clear()
