@@ -14,7 +14,8 @@ def main(stdscr):
     curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_RED)    # Player
     curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_GREEN) # Goal
     curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_YELLOW) # Path
-    curses.init_pair(5, curses.COLOR_MAGENTA, curses.COLOR_WHITE) # Visited
+    curses.init_pair(5, curses.COLOR_WHITE, curses.COLOR_WHITE) # Visited
+    curses.init_pair(6, curses.COLOR_CYAN, curses.COLOR_CYAN) # Marked
 
     h, w = stdscr.getmaxyx()
     m = Board(h//3, w//6)
@@ -27,7 +28,7 @@ def main(stdscr):
 
     while True:
         h, w = stdscr.getmaxyx()
-        status = "Moving: Start" if move else "Moving: Goal "
+        status = "Moving: START" if move else "Moving: GOAL "
         stdscr.addstr(h//2 + m.l//2 + 1, w//2 - len(status)//2, status,
                       curses.A_BOLD)
         if move:

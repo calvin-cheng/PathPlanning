@@ -49,7 +49,7 @@ class Board:
                     attr = curses.color_pair(5)
                 elif self.board[j][i] == 4: # Marked
                     string = '  '
-                    attr = curses.color_pair(6)
+                    attr = curses.color_pair(6) | curses.A_STANDOUT
 
                 stdscr.addstr(h//2 - self.l//2 + j - 2, w//2 - self.w + i*2, string, attr)
 

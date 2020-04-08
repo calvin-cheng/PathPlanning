@@ -33,6 +33,8 @@ class Djikstra:
                 break
             nbrs = self.board.getNeighbours(cur)
             for nbr in nbrs:
+                if self.board[nbr[1]][nbr[0]] != 3:
+                    self.board[nbr[1]][nbr[0]] = 4
                 dist2nbr = dists[cur] + self.getDist(cur, nbr)
                 if dists[nbr] > dist2nbr:
                     dists[nbr] = dist2nbr
