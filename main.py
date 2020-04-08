@@ -18,48 +18,46 @@ def main(stdscr):
 
     h, w = stdscr.getmaxyx()
     m = Board(h//3, w//6)
-    move = True # True: move player, False: move goal
     
     m.draw(stdscr)
     string = "(T)oggle | (M)azify | (C)lear path | (R)eset | (S)earch | (Q)uit"
     stdscr.addstr(h//2 + m.l//2, w//2 - len(string)//2, string,
                   curses.A_BOLD)
 
+    player = True
+    planner = 0
+
     while True:
         h, w = stdscr.getmaxyx()
-        status = "Moving: START" if move else "Moving: GOAL "
-        stdscr.addstr(h//2 + m.l//2 + 1, w//2 - len(status)//2, status,
-                      curses.A_BOLD)
-        if move:
-            toMove = m.player
-        else:
-            toMove = m.goal
-            
+        playerStatus = "Moving: START" if player else "Moving: GOAL "
+        plannerStatus = "Path Planner: A-STAR  " if planner else "Path Planner: DIJKSTRA"
+        stdscr.addstr(h//2 + m.l//2 + 1, 
+                      w//2 - (len(playerStatus) + len('  |  ') + len(plannerStatus)) // 2, 
+                      playerStatus + '  |  ' + plannerStatus, curses.A_BOLD)
+
         key = stdscr.getch()
 
-        if move:
-            toMove = m.player
-        else:
-            toMove = m.goal
+        players = {True: m.player, False: m.goal}
+        planners = {0: Dijkstra, 1: AStar}
 
         if key == curses.KEY_UP:
-            m.moveNode(toMove, 'U')
+            m.moveNode(players[player], 'U')
             m.draw(stdscr)
         elif key == curses.KEY_DOWN:
-            m.moveNode(toMove, 'D')
+            m.moveNode(players[player], 'D')
             m.draw(stdscr)
         elif key == curses.KEY_RIGHT:
-            m.moveNode(toMove, 'R')
+            m.moveNode(players[player], 'R')
             m.draw(stdscr)
         elif key == curses.KEY_LEFT:
-            m.moveNode(toMove, 'L')
+            m.moveNode(players[player], 'L')
             m.draw(stdscr)
         elif key == ord('q'):
             curses.curs_set(1)
             break
         elif key == ord('s'):
             m.clearPath()
-            d = Dijkstra(m)
+            d = planners[planner](m)
             path = d.search(m.player, m.goal, stdscr)
             for node in path:
                 i, j = node
@@ -76,15 +74,9 @@ def main(stdscr):
             m.clearPath()
             m.draw(stdscr)
         elif key == ord('t'):
-            move = not(move)
-
-        if m.checkWin():
-            stdscr.clear()
-            string = "You win, noice!"
-            stdscr.addstr(h//2, w//2 - len(string)//2, string)
-            stdscr.refresh()
-            time.sleep(1.5)
-            break
+            player = not(player)
+        elif key == ord(' '):
+            planner = (planner + 1) % 2
 
 curses.wrapper(main)
 
