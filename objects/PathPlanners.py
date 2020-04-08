@@ -35,7 +35,12 @@ class Djikstra:
             for nbr in nbrs:
                 if self.board[nbr[1]][nbr[0]] != 3:
                     self.board[nbr[1]][nbr[0]] = 4
-                dist2nbr = dists[cur] + self.getDist(cur, nbr)
+
+                dir2cur = self.getDirection(prevs[cur], cur)
+                dir2nbr = self.getDirection(cur, nbr)
+                dirCost = abs(dir2nbr - dir2cur) % 2
+
+                dist2nbr = dists[cur] + self.getDist(cur, nbr) + dirCost
                 if dists[nbr] > dist2nbr:
                     dists[nbr] = dist2nbr
                     prevs[nbr] = cur
@@ -58,6 +63,17 @@ class Djikstra:
         node2: (x, y) tuple
         '''
         return abs(node1[0] - node2[0]) + abs(node1[1] - node2[1])
+    
+    def getDirection(self, node1, node2):
+        '''Finds the bearing from node1 to node 2
+        OUTPUT: 0: North, 1: East, 2: South, 3: West
+        '''
+        if node1 is None or node2 is None:
+            return 0
+        dirs = {(0, 1): 0, (1, 0): 1, (0, -1): 2, (-1, 0): 3} # N E S W
+        dx = node1[0] - node2[0]
+        dy = node1[1] - node2[1]
+        return dirs[(dx, dy)]
 
 
 class AStar:
