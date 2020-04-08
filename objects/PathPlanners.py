@@ -1,46 +1,44 @@
+from objects.LinearADT import PriorityQueue
+import curses
+import math
+
+
 class Djikstra:
     def __init__(self, board):
         self.board = board
 
-    def search(self, start, goal, screen):
+    def search(self, start, goal, screen = None):
         '''Performs search using Djikstra's algorithm
         start: (x, y) tuple
         goal: (x, y) tuple
         '''
-        from objects.LinearADT import PriorityQueue
-        import curses
-
-        dists = {(i, j): 9999 for i in range(len(self.board[0])) 
-                              for j in range(len(self.board))}
-        prevs = {(i, j) : None for i in range(len(self.board[0]))
-                               for j in range(len(self.board))}
-        startX, startY = start
-        dists[start] = 0
+        costs = {}
+        prevs = {}
+        costs[start] = 0
+        prevs[start] = None
 
         pq = PriorityQueue([], [])
-        for i in range(len(self.board[0])):
-            for j in range(len(self.board)):
-                if self.board[j][i] == 1:
-                    continue
-                node = (i, j)
-                pq.enqueue(node, dists[node])
+        pq.enqueue(start, costs[start])
 
         while not pq.isEmpty():
             cur = pq.dequeue()
             cur_x, cur_y = cur
             self.board[cur_y][cur_x] = 3 # Mark as "seen"
+
             if cur == goal:
                 break
+
             nbrs = self.board.getNeighbours(cur)
             for nbr in nbrs:
-                if self.board[nbr[1]][nbr[0]] != 3:
-                    self.board[nbr[1]][nbr[0]] = 4
-                dist2nbr = dists[cur] + self.getDist(cur, nbr)
-                if dists[nbr] > dist2nbr:
-                    dists[nbr] = dist2nbr
+                cost2nbr = costs[cur] + self.getCost(cur, nbr)
+                if nbr not in costs or cost2nbr < costs[nbr]:
+                    # Relax costs if cost is lower
+                    self.board[nbr[1]][nbr[0]] = 4 # Mark as "frontier"
+                    costs[nbr] = cost2nbr
                     prevs[nbr] = cur
-                    pq.setPriority(nbr, dist2nbr)
-            self.board.draw(screen)
+                    pq.enqueue(nbr, cost2nbr) # Multiple nodes possible!
+            if screen:
+                self.board.draw(screen)
 
         # Recreate path
         path = [goal]
@@ -52,7 +50,7 @@ class Djikstra:
 
         return reversed(path)
 
-    def getDist(self, node1, node2):
+    def getCost(self, node1, node2):
         '''Finds manhattan distance between node1 and node2
         node1: (x, y) tuple
         node2: (x, y) tuple
@@ -75,7 +73,6 @@ class AStar:
         startX, startY = start
         dists[startY][startX] = 0 + self.getScore(start, goal)
 
-        from objects.LinearADT import PriorityQueue
         pq = PriorityQueue([], [])
         for i in range(len(self.board[0])):
             for j in range(len(self.board)):
@@ -121,7 +118,6 @@ class AStar:
         node1: (x, y) tuple
         node2: (x, y) tuple
         '''
-        import math
         dx = abs(node1[0] - node2[0])
         dy = abs(node1[1] - node2[1])
         dist = int(math.sqrt(dx**2 + dy**2))

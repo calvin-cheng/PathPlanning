@@ -1,4 +1,8 @@
 # Maze Generation Testing
+import curses
+import random
+
+
 class Board:
     def __init__(self, length, width):
         '''Constructor'''
@@ -6,7 +10,6 @@ class Board:
         self.l = (length * 2 - 1) + 2
         self.w = (width * 2 - 1) + 2
         self.board = [[0 for _ in range(self.w)] for _ in range(self.l)]
-#        self.player = (self.w - 22, self.l - 22)
         self.player = (1, 1)
         self.goal = (self.w - 2, self.l - 2)
         self.generate()
@@ -28,7 +31,6 @@ class Board:
 
     def draw(self, stdscr):
         '''Draws maze and player on curses screen object'''
-        import curses
         h, w = stdscr.getmaxyx()
 
         # Draw walls
@@ -72,8 +74,6 @@ class Board:
 
     def mazify(self):
         '''Generates random maze using DFS and moves player to start'''
-        import random
-
         self.board = [[1 for _ in range(self.w)] for _ in range(self.l)]
         X, Y = random.randrange(1,self.w - 1,2), random.randrange(1,self.l - 1,2)
         self.board[Y][X] = 0
@@ -92,7 +92,6 @@ class Board:
         '''Helper recursive function for DFS maze generation.
         "Carves" a tunnel from position (X, Y).
         '''
-        import random
         DIRS = [[0, -2], [2, 0], [0, 2], [-2, 0]] # N, E, S, W
         random.shuffle(DIRS)
         for dX, dY in DIRS:

@@ -1,6 +1,5 @@
 import curses
 import time
-import random
 from objects.PathPlanners import Djikstra, AStar
 from objects.Board import Board
 
@@ -15,7 +14,7 @@ def main(stdscr):
     curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_GREEN) # Goal
     curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_YELLOW) # Path
     curses.init_pair(5, curses.COLOR_WHITE, curses.COLOR_WHITE) # Visited
-    curses.init_pair(6, curses.COLOR_CYAN, curses.COLOR_CYAN) # Marked
+    curses.init_pair(6, curses.COLOR_CYAN, curses.COLOR_CYAN) # Frontier
 
     h, w = stdscr.getmaxyx()
     m = Board(h//3, w//6)

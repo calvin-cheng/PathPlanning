@@ -27,3 +27,9 @@ Pressing various keys leads to their respective actions:
 
 * [Curses](https://docs.python.org/3/howto/curses.html) – module used to control terminal displays
 
+## Todos
+
+* Add mouse usage (dragging nodes, adding walls, etc)
+* Implement other searches (BFS, DFS, Greedy, Bidirectional, NBA*, etc)
+* Prettier visualisation?
+

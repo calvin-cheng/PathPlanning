@@ -57,7 +57,7 @@ class PriorityQueue:
         self.heapify()
     
     def heapify(self):
-        for i in range(self.len, 0, -1):
+        for i in range(self.len//2, 0, -1):
             self.percDown(i)
 
     def swap(self, i, j):
