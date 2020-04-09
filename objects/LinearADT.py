@@ -1,3 +1,5 @@
+import heapq
+
 class PriorityQueue:
     # Children = 2 * n, (2 * n) + 1
     # Parent = n // 2
@@ -66,4 +68,19 @@ class PriorityQueue:
 
     def isEmpty(self):
         return self.len == 0
+
+
+class PriorityQueue2:
+    def __init__(self):
+        self.items = []
+
+    def isEmpty(self):
+        return self.items == []
+
+    def enqueue(self, item, priority):
+        heapq.heappush(self.items, (priority, item))
+
+    def dequeue(self):
+        return heapq.heappop(self.items)[1]
+
 

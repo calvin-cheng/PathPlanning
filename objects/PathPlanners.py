@@ -1,7 +1,6 @@
-from objects.LinearADT import PriorityQueue
+from objects.LinearADT import PriorityQueue, PriorityQueue2
 import curses
 import math
-import heapq
 
 
 class Dijkstra:
@@ -19,14 +18,11 @@ class Dijkstra:
         prevs[start] = None
 
 #        pq = PriorityQueue([], [])
-#        pq.enqueue(start, costs[start])
-        h = []
-        heapq.heappush(h, (costs[start], start))
+        pq = PriorityQueue2()
+        pq.enqueue(start, costs[start])
 
-#        while not pq.isEmpty():
-#            cur = pq.dequeue()
-        while len(h) > 0:
-            _, cur = heapq.heappop(h)
+        while not pq.isEmpty():
+            cur = pq.dequeue()
             cur_x, cur_y = cur
             self.board[cur_y][cur_x] = 3 # Mark as "seen"
 
@@ -35,15 +31,14 @@ class Dijkstra:
 
             nbrs = self.board.getNeighbours(cur)
             for nbr in nbrs:
-                turnCost = self.isTurn(prevs[cur], nbr) * 0.1
-                cost2nbr = costs[cur] + self.getCost(cur, nbr) + turnCost
+#                turnCost = self.isTurn(prevs[cur], nbr) * 0
+                cost2nbr = costs[cur] + self.getCost(cur, nbr)# + turnCost
                 if nbr not in costs or cost2nbr < costs[nbr]:
                     # Relax costs if cost is lower
                     self.board[nbr[1]][nbr[0]] = 4 # Mark as "frontier"
                     costs[nbr] = cost2nbr
                     prevs[nbr] = cur
-#                    pq.enqueue(nbr, cost2nbr) # Multiple nodes possible!
-                    heapq.heappush(h, (cost2nbr, nbr))
+                    pq.enqueue(nbr, cost2nbr) # Multiple nodes possible!
             if screen:
                 self.board.draw(screen)
 
@@ -54,7 +49,6 @@ class Dijkstra:
             prev = prevs[(i, j)]
             path.append(prev)
             i, j = prev
-
         return reversed(path)
 
     def getCost(self, node1, node2):
@@ -87,7 +81,8 @@ class AStar:
         scores[start] = 0
         prevs[start] = None
 
-        pq = PriorityQueue([], [])
+#        pq = PriorityQueue([], [])
+        pq = PriorityQueue2()
         pq.enqueue(start, scores[start])
 
         while not pq.isEmpty():
@@ -100,15 +95,15 @@ class AStar:
 
             nbrs = self.board.getNeighbours(cur)
             for nbr in nbrs:
-                cost = self.getCost(cur, nbr) + self.isTurn(prevs[cur], nbr)
-                heuristic = self.getHeuristic(nbr, goal) # + self.cross(nbr, start, goal) * 0.001
+                cost = self.getCost(cur, nbr)# + self.isTurn(prevs[cur], nbr) * 0.1
+                heuristic = self.getHeuristic(nbr, goal)# + self.cross(nbr, start, goal) * 0.001
                 score2nbr = scores[cur] + cost
                 if nbr not in scores or score2nbr < scores[nbr]:
                     # Relax costs if cost is lower
                     self.board[nbr[1]][nbr[0]] = 4 # Mark as "frontier"
                     scores[nbr] = score2nbr
                     prevs[nbr] = cur
-                    pq.enqueue(nbr, score2nbr + heuristic) # Multiple nodes possible!
+                    pq.enqueue(nbr, score2nbr + heuristic * 1.001) # Multiple nodes possible!
             if screen:
                 self.board.draw(screen)
 
@@ -119,7 +114,6 @@ class AStar:
             prev = prevs[(i, j)]
             path.append(prev)
             i, j = prev
-
         return reversed(path)
 
     def getCost(self, node1, node2):

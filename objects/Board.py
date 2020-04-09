@@ -151,5 +151,3 @@ class Board:
 
     def checkWin(self):
         return self.player == self.goal
-
-

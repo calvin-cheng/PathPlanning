@@ -61,9 +61,10 @@ def main(stdscr):
             path = d.search(m.player, m.goal, stdscr)
             for node in path:
                 i, j = node
-                time.sleep(0.04)
+                time.sleep(0.03)
                 m.board[j][i] = 2
                 m.draw(stdscr)
+                curses.flushinp() # Clears key inputs from queue
         elif key == ord('m'):
             m.mazify()
             m.draw(stdscr)
