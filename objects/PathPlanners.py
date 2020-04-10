@@ -31,8 +31,8 @@ class Dijkstra:
 
             nbrs = self.board.getNeighbours(cur)
             for nbr in nbrs:
-#                turnCost = self.isTurn(prevs[cur], nbr) * 0
-                cost2nbr = costs[cur] + self.getCost(cur, nbr)# + turnCost
+                turnCost = self.isTurn(prevs[cur], nbr) * 0.5
+                cost2nbr = costs[cur] + self.getCost(cur, nbr) + turnCost
                 if nbr not in costs or cost2nbr < costs[nbr]:
                     # Relax costs if cost is lower
                     self.board[nbr[1]][nbr[0]] = 4 # Mark as "frontier"
@@ -95,7 +95,7 @@ class AStar:
 
             nbrs = self.board.getNeighbours(cur)
             for nbr in nbrs:
-                cost = self.getCost(cur, nbr)# + self.isTurn(prevs[cur], nbr) * 0.1
+                cost = self.getCost(cur, nbr) + self.isTurn(prevs[cur], nbr) * 1
                 heuristic = self.getHeuristic(nbr, goal)# + self.cross(nbr, start, goal) * 0.001
                 score2nbr = scores[cur] + cost
                 if nbr not in scores or score2nbr < scores[nbr]:
@@ -103,7 +103,7 @@ class AStar:
                     self.board[nbr[1]][nbr[0]] = 4 # Mark as "frontier"
                     scores[nbr] = score2nbr
                     prevs[nbr] = cur
-                    pq.enqueue(nbr, score2nbr + heuristic * 1.001) # Multiple nodes possible!
+                    pq.enqueue(nbr, score2nbr + heuristic * 1.01) # Multiple nodes possible!
             if screen:
                 self.board.draw(screen)
 
@@ -128,7 +128,9 @@ class AStar:
         node1: (x, y) tuple
         node2: (x, y) tuple
         '''
-        return abs(node1[0] - node2[0]) + abs(node1[1] - node2[1])
+        #return abs(node1[0] - node2[0]) + abs(node1[1] - node2[1])
+        return (abs(node1[0] - node2[0])**2 
+                + abs(node1[1] - node2[1])**2)**(1/2)
 
     def cross(self, node1, node2, node3):
         '''Calculates vector cross-product between node1 and node3, 

@@ -71,6 +71,12 @@ class Board:
         for i in range(1, self.w-1):
             for j in range(1, self.l-1):
                 self.board[j][i] = 0
+        i = self.w//2
+        for j in range(1, self.l-1):
+            if j == self.l//2:
+                continue
+            self.board[j][i] = 1
+
 
     def mazify(self):
         '''Generates random maze using DFS and moves player to start'''
