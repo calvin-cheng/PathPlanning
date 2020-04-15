@@ -12,11 +12,12 @@ class Game:
 
         self.board = board
         self.screen = screen
-        self.generate_menu()
+        self.generate_menus()
+        self.menu = 0
 
         self.initialise_curses()
         self.draw_board()
-        self.draw_menu()
+        self.menus[self.menu].display()
 
         self.player = True
         self.players = {True: self.board.player, False: self.board.goal}
@@ -25,16 +26,35 @@ class Game:
         self.isRunning = True
 
 
-    def generate_menu(self):
-        self.menu = Menu(94, 1, 
+    def generate_menus(self):
+        menu_sim = Menu(94, 1, 
+                        [
+                         Button('Edit Board', self.switch_menu),
+                         Button('Pathfind!', self.search),
+                         Button('Clear', self.board.clearPath),
+                         Button('Quit', self.quit)
+                        ],
+                        self.screen)
+        menu_edit = Menu(94, 1,
                          [
-                          Radio('Toggle Me'),
-                          Button('Edit Board', self.switch_mode),
-                          Button('Pathfind!', self.search),
-                          Button('Clear', self.board.clearPath),
-                          Button('Quit', self.quit)
+                         Button('Move Start', self.move_player),
+                         Button('Move Goal', self.move_goal),
+                         Button('Mazify', self.board.mazify),
+                         Button('Reset', self.board.generate),
+                         Button('Done', self.switch_menu)
                          ],
                          self.screen)
+        menus = [menu_sim, menu_edit]
+        self.menus = menus
+
+    def move_player(self):
+        self.player = True
+        self.switch_mode()
+
+    def move_goal(self):
+        self.player = False
+        self.switch_mode()
+
 
     def initialise_curses(self):
         self.screen.clear()
@@ -55,11 +75,11 @@ class Game:
             if self.mode == True: 
                 # Simulation
                 if key == curses.KEY_UP:
-                    self.menu.nav(-1)
+                    self.menus[self.menu].nav(-1)
                 elif key == curses.KEY_DOWN:
-                    self.menu.nav(1)
+                    self.menus[self.menu].nav(1)
                 elif key == ord(' '):
-                    self.menu.select()
+                    self.menus[self.menu].select()
                 elif key == ord('p'):
                     self.switch_planner()
             else: 
@@ -74,31 +94,27 @@ class Game:
                     self.board.moveNode(self.players[self.player], 'R')
                 elif key == curses.KEY_LEFT:
                     self.board.moveNode(self.players[self.player], 'L')
-                elif key == ord('q'):
+                elif key == ord(' '):
                     self.switch_mode()
-                elif key == ord('m'):
-                    self.board.mazify()
-                elif key == ord('r'):
-                    self.board.generate()
                 elif key == ord('t'):
                     self.switch_player()
             self.draw_board()
-            self.draw_menu()
+            self.menus[self.menu].display()
 
-    def draw_menu(self):
-        y, x = self.menu.window.getmaxyx()
-        title = 'PATH-FINDER'
-        self.menu.window.addstr(1, x//2 - len(title)//2, title, 
-                curses.A_BOLD | curses.A_UNDERLINE)
-        for idx, item in enumerate(self.menu.items):
-            if self.mode and self.menu.pos == idx:
-                attr = curses.A_BOLD | curses.A_REVERSE
-            else:
-                attr = curses.A_BOLD
-            self.menu.window.addstr(3+idx, 2, item.string(), attr)
-        self.menu.window.addstr(3+idx+1, 2, '') # Prevent underline hiding
-        self.menu.window.box()
-        self.menu.window.refresh()
+#     def draw_menu(self):
+#         y, x = self.menu.window.getmaxyx()
+#         title = 'PATH-FINDER'
+#         self.menu.window.addstr(1, x//2 - len(title)//2, title, 
+#                 curses.A_BOLD | curses.A_UNDERLINE)
+#         for idx, item in enumerate(self.menu.items):
+#             if self.mode and self.menu.pos == idx:
+#                 attr = curses.A_BOLD | curses.A_REVERSE
+#             else:
+#                 attr = curses.A_BOLD
+#             self.menu.window.addstr(3+idx, 2, item.string(), attr)
+#         self.menu.window.addstr(3+idx+1, 2, '') # Prevent underline hiding
+#         self.menu.window.box()
+#         self.menu.window.refresh()
 
     def draw_board(self):
         '''Draws board and player on curses screen object'''
@@ -138,6 +154,9 @@ class Game:
 
     def switch_player(self):
         self.player = not(self.player)
+
+    def switch_menu(self):
+        self.menu = (self.menu + 1) % 2
 
     def switch_mode(self):
         self.mode = not(self.mode)

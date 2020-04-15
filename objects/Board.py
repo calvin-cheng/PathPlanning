@@ -29,9 +29,10 @@ class Board:
             string += '\n'
         return string
 
-    def draw(self, stdscr):
-        '''Draws maze and player on curses screen object'''
-        h, w = stdscr.getmaxyx()
+        
+    def draw(self, screen):
+        '''Draws board and player on curses screen object'''
+        h, w = screen.getmaxyx()
 
         # Draw walls
         # Double horizontal spacing for better aspect ratio
@@ -53,18 +54,19 @@ class Board:
                     string = '  '
                     attr = curses.color_pair(6) | curses.A_STANDOUT
 
-                stdscr.addstr(1 + j, 2 + i*2, string, attr)
+                screen.addstr(1 + j, 2 + i * 2, string, attr)
 
         # Draw player
-        stdscr.addstr(1 + self.player[1],
+        screen.addstr(1 + self.player[1],
                       2 + self.player[0]*2,
                       '  ', curses.color_pair(2))
         # Draw goal
-        stdscr.addstr(1 + self.goal[1],
+        screen.addstr(1 + self.goal[1],
                       2 + self.goal[0]*2,
                       '  ', curses.color_pair(3) | curses.A_BOLD)
-        stdscr.refresh()
-        
+        screen.refresh()
+
+
     def generate(self):
         '''Generates an empty board with border walls'''
         self.board = [[1 for _ in range(self.w)] for _ in range(self.l)]
