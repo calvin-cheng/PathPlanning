@@ -3,4 +3,4 @@ include
 lib
 pyvenv.cfg
 __pycache__
-.swp
+*.swp

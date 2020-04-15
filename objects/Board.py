@@ -10,8 +10,8 @@ class Board:
         self.l = (length * 2 - 1) + 2
         self.w = (width * 2 - 1) + 2
         self.board = [[0 for _ in range(self.w)] for _ in range(self.l)]
-        self.player = (1, 1)
-        self.goal = (self.w - 2, self.l - 2)
+        self.player = (3, self.l//2)
+        self.goal = (self.w - 4, self.l//2)
         self.generate()
 
     def __str__(self):
@@ -53,15 +53,15 @@ class Board:
                     string = '  '
                     attr = curses.color_pair(6) | curses.A_STANDOUT
 
-                stdscr.addstr(h//2 - self.l//2 + j - 2, w//2 - self.w + i*2, string, attr)
+                stdscr.addstr(1 + j, 2 + i*2, string, attr)
 
         # Draw player
-        stdscr.addstr(h//2 - self.l//2 - 2 + self.player[1],
-                      w//2 - self.w + self.player[0]*2,
+        stdscr.addstr(1 + self.player[1],
+                      2 + self.player[0]*2,
                       '  ', curses.color_pair(2))
         # Draw goal
-        stdscr.addstr(h//2 - self.l//2 - 2 + self.goal[1],
-                      w//2 - self.w + self.goal[0]*2,
+        stdscr.addstr(1 + self.goal[1],
+                      2 + self.goal[0]*2,
                       '  ', curses.color_pair(3) | curses.A_BOLD)
         stdscr.refresh()
         

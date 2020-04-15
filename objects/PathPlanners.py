@@ -95,7 +95,7 @@ class AStar:
 
             nbrs = self.board.getNeighbours(cur)
             for nbr in nbrs:
-                cost = self.getCost(cur, nbr) + self.isTurn(prevs[cur], nbr) * 1
+                cost = self.getCost(cur, nbr) + self.isTurn(prevs[cur], nbr) * 0.5
                 heuristic = self.getHeuristic(nbr, goal)# + self.cross(nbr, start, goal) * 0.001
                 score2nbr = scores[cur] + cost
                 if nbr not in scores or score2nbr < scores[nbr]:
@@ -103,7 +103,7 @@ class AStar:
                     self.board[nbr[1]][nbr[0]] = 4 # Mark as "frontier"
                     scores[nbr] = score2nbr
                     prevs[nbr] = cur
-                    pq.enqueue(nbr, score2nbr + heuristic * 1.01) # Multiple nodes possible!
+                    pq.enqueue(nbr, score2nbr + heuristic * 1.001) # Multiple nodes possible!
             if screen:
                 self.board.draw(screen)
 
