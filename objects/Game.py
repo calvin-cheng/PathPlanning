@@ -1,8 +1,8 @@
 import curses
 import time
-from objects.PathPlanners import Dijkstra, AStar
+from objects.PathPlanners import Dijkstra, AStar, Greedy
 from objects.Board import Board
-from objects.Menu import Menu, Radio, Button
+from objects.Menu import *
 
 
 class Game:
@@ -22,26 +22,41 @@ class Game:
         self.player = True
         self.players = {True: self.board.player, False: self.board.goal}
         self.planner = 0
-        self.planners = {0: Dijkstra, 1: AStar}
+        self.planners = {0: Dijkstra, 1: AStar, 2: Greedy}
         self.isRunning = True
 
 
     def generate_menus(self):
-        menu_sim = Menu(94, 1, 
+        menu_sim = Menu(94, 1, 24, 37,
                         [
-                         Button('Edit Board', self.switch_menu),
-                         Button('Pathfind!', self.search),
-                         Button('Clear', self.board.clearPath),
-                         Button('Quit', self.quit)
+                         Heading('Algorithms', 20),
+                         RadioGroupSingle([
+                                          Radio('Dijkstra'),
+                                          Radio('A-Star'),
+                                          Radio('Greedy')
+                                          ],
+                                          20, 
+                                          self.switch_planner),
+                         Heading('Options', 20),
+                         RadioGroupMultiple([
+                                             Radio('Hello'),
+                                             Radio('World'),
+                                             Radio('Bitch')
+                                             ],
+                                            20),
+                         Button('Pathfind!', self.search, 20, 3),
+                         Button('Edit Board', self.switch_menu, 20, 3),
+                         Button('Clear', self.board.clearPath, 20, 3),
+                         Button('Quit', self.quit, 8, 3)
                         ],
                         self.screen)
-        menu_edit = Menu(94, 1,
+        menu_edit = Menu(94, 1, 24, 37,
                          [
-                         Button('Move Start', self.move_player),
-                         Button('Move Goal', self.move_goal),
-                         Button('Mazify', self.board.mazify),
-                         Button('Reset', self.board.generate),
-                         Button('Done', self.switch_menu)
+                         Button('Move Start', self.move_player, 20, 3),
+                         Button('Move Goal', self.move_goal, 20, 3),
+                         Button('Mazify', self.board.mazify, 20, 3),
+                         Button('Reset', self.board.generate, 20, 3),
+                         Button('Done', self.switch_menu, 20, 3)
                          ],
                          self.screen)
         menus = [menu_sim, menu_edit]
@@ -101,21 +116,6 @@ class Game:
             self.draw_board()
             self.menus[self.menu].display()
 
-#     def draw_menu(self):
-#         y, x = self.menu.window.getmaxyx()
-#         title = 'PATH-FINDER'
-#         self.menu.window.addstr(1, x//2 - len(title)//2, title, 
-#                 curses.A_BOLD | curses.A_UNDERLINE)
-#         for idx, item in enumerate(self.menu.items):
-#             if self.mode and self.menu.pos == idx:
-#                 attr = curses.A_BOLD | curses.A_REVERSE
-#             else:
-#                 attr = curses.A_BOLD
-#             self.menu.window.addstr(3+idx, 2, item.string(), attr)
-#         self.menu.window.addstr(3+idx+1, 2, '') # Prevent underline hiding
-#         self.menu.window.box()
-#         self.menu.window.refresh()
-
     def draw_board(self):
         '''Draws board and player on curses screen object'''
         h, w = self.screen.getmaxyx()
@@ -155,14 +155,14 @@ class Game:
     def switch_player(self):
         self.player = not(self.player)
 
+    def switch_planner(self, n):
+        self.planner = n
+
     def switch_menu(self):
         self.menu = (self.menu + 1) % 2
 
     def switch_mode(self):
         self.mode = not(self.mode)
-
-    def switch_planner(self):
-        planner = (planner + 1) % 2
 
     def quit(self):
         self.isRunning = False

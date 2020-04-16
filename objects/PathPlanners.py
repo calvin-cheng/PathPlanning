@@ -151,3 +151,51 @@ class AStar:
         if node1[0] == node2[0] or node1[1] == node2[1]:
             return 0
         return 1
+
+
+class Greedy(AStar):
+    def search(self, start, goal, screen = None):
+        '''Performs search using AStar algorithm
+        start: (x, y) tuple
+        goal: (x, y) tuple
+        '''
+        scores = {}
+        prevs = {}
+        scores[start] = 0
+        prevs[start] = None
+
+#        pq = PriorityQueue([], [])
+        pq = PriorityQueue2()
+        pq.enqueue(start, scores[start])
+
+        while not pq.isEmpty():
+            cur = pq.dequeue()
+            cur_x, cur_y = cur
+            self.board[cur_y][cur_x] = 3 # Mark as "seen"
+
+            if cur == goal:
+                break
+
+            nbrs = self.board.getNeighbours(cur)
+            for nbr in nbrs:
+                cost = self.getCost(cur, nbr) + self.isTurn(prevs[cur], nbr) * 0.5
+                heuristic = self.getHeuristic(nbr, goal)# + self.cross(nbr, start, goal) * 0.001
+                score2nbr = scores[cur] + cost
+                if nbr not in scores or score2nbr < scores[nbr]:
+                    # Relax costs if cost is lower
+                    self.board[nbr[1]][nbr[0]] = 4 # Mark as "frontier"
+                    scores[nbr] = score2nbr
+                    prevs[nbr] = cur
+                    pq.enqueue(nbr, heuristic) # Multiple nodes possible!
+            if screen:
+                self.board.draw(screen)
+
+        # Recreate path
+        path = [goal]
+        i, j = goal
+        while prevs[(i, j)]:
+            prev = prevs[(i, j)]
+            path.append(prev)
+            i, j = prev
+        return reversed(path)
+
