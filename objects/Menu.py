@@ -76,11 +76,10 @@ class RadioGroup:
             return False
 
 class RadioGroupSingle(RadioGroup):
-    def __init__(self, radios, width, fun):
+    def __init__(self, radios, width):
         super().__init__(radios, width)
         self.state = 0
         self.radios[self.pos].state = True
-        self.fun = fun
         
     def run(self):
         if self.radios[self.pos].state == False:
@@ -88,8 +87,6 @@ class RadioGroupSingle(RadioGroup):
                 radio.state = False
             self.radios[self.pos].run()
             self.state = self.pos
-            if self.fun:
-                self.fun(self.state)
 
 class RadioGroupMultiple(RadioGroup):
     def run(self):

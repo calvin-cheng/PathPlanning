@@ -29,20 +29,30 @@ class Game:
     def generate_menus(self):
         menu_sim = Menu(94, 1, 24, 37,
                         [
-                         Spacer(5),
+                         Title('PATHFINDING', 20),
+                         Spacer(1),
                          Heading('Algorithms', 20),
                          RadioGroupSingle([
                                            Radio('Dijkstra'),
                                            Radio('A Star'),
                                            Radio('Greedy')
                                           ],
-                                          20, 
-                                          self.switch_planner),
+                                          20),
+                         Heading('Cost', 20),
+                         RadioGroupSingle([
+                                           Radio('Manhattan'),
+                                           Radio('Euclidean')
+                                          ],
+                                          20),
+                         Heading('Heuristic', 20),
+                         RadioGroupSingle([
+                                           Radio('Manhattan'),
+                                           Radio('Euclidean')
+                                          ],
+                                          20),
                          Heading('Options', 20),
                          RadioGroupMultiple([
-                                             Radio('Hello'),
-                                             Radio('World'),
-                                             Radio('Bitch')
+                                             Radio('Bidirectional'),
                                             ],
                                             20),
                          Button('Pathfind!', self.search, 20, 3),
@@ -161,7 +171,10 @@ class Game:
 
     def search(self):
         self.board.clearPath()
-        d = self.planners[self.planner](self.board)
+        mode_c = self.menus[0].items[5].state
+        mode_h = self.menus[0].items[7].state
+        planner = self.menus[0].items[3].state
+        d = self.planners[planner](self.board, mode_c, mode_h)
         path = d.search(self.board.player, self.board.goal, self.screen)
         for node in path:
             i, j = node

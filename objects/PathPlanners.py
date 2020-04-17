@@ -4,8 +4,10 @@ import math
 
 
 class Dijkstra:
-    def __init__(self, board):
+    def __init__(self, board, mode_c, mode_h):
         self.board = board
+        self.mode_c = mode_c
+        self.mode_h = mode_h
 
     def search(self, start, goal, screen = None):
         '''Performs search using Djikstra's algorithm
@@ -32,7 +34,7 @@ class Dijkstra:
             nbrs = self.board.getNeighbours(cur)
             for nbr in nbrs:
                 turnCost = self.isTurn(prevs[cur], nbr) * 0.5
-                cost2nbr = costs[cur] + self.getCost(cur, nbr) + turnCost
+                cost2nbr = costs[cur] + self.getCost(cur, nbr, self.mode_c) + turnCost
                 if nbr not in costs or cost2nbr < costs[nbr]:
                     # Relax costs if cost is lower
                     self.board[nbr[1]][nbr[0]] = 4 # Mark as "frontier"
@@ -51,12 +53,16 @@ class Dijkstra:
             i, j = prev
         return reversed(path)
 
-    def getCost(self, node1, node2):
-        '''Finds manhattan distance between node1 and node2
+    def getCost(self, node1, node2, mode):
+        '''Finds distance between node1 and node2
         node1: (x, y) tuple
         node2: (x, y) tuple
         '''
-        return abs(node1[0] - node2[0]) + abs(node1[1] - node2[1])
+        if mode == 0:
+            return abs(node1[0] - node2[0]) + abs(node1[1] - node2[1])
+        elif mode == 1:
+            return (abs(node1[0] - node2[0])**2 
+                    + abs(node1[1] - node2[1])**2)**(1/2)
 
     def isTurn(self, node1, node2):
         '''Finds if nodes lie on same line. If not, there's a turn'''
@@ -68,8 +74,10 @@ class Dijkstra:
 
 
 class AStar:
-    def __init__(self, board):
+    def __init__(self, board, mode_c, mode_h):
         self.board = board
+        self.mode_c = mode_c
+        self.mode_h = mode_h
 
     def search(self, start, goal, screen = None):
         '''Performs search using Djikstra's algorithm
@@ -95,15 +103,17 @@ class AStar:
 
             nbrs = self.board.getNeighbours(cur)
             for nbr in nbrs:
-                cost = self.getCost(cur, nbr) + self.isTurn(prevs[cur], nbr) * 0.5
-                heuristic = self.getHeuristic(nbr, goal)# + self.cross(nbr, start, goal) * 0.001
+                cost = (self.getCost(cur, nbr, self.mode_c) 
+                        + self.isTurn(prevs[cur], nbr) * 0.5)
+                heuristic = (self.getHeuristic(nbr, goal, self.mode_h)
+                             + self.cross(nbr, start, goal) * 0)
                 score2nbr = scores[cur] + cost
                 if nbr not in scores or score2nbr < scores[nbr]:
                     # Relax costs if cost is lower
                     self.board[nbr[1]][nbr[0]] = 4 # Mark as "frontier"
                     scores[nbr] = score2nbr
                     prevs[nbr] = cur
-                    pq.enqueue(nbr, score2nbr + heuristic * 1.001) # Multiple nodes possible!
+                    pq.enqueue(nbr, score2nbr + heuristic * 1.000) # Multiple nodes possible!
             if screen:
                 self.board.draw(screen)
 
@@ -116,21 +126,27 @@ class AStar:
             i, j = prev
         return reversed(path)
 
-    def getCost(self, node1, node2):
+    def getCost(self, node1, node2, mode = 0):
         '''Finds manhattan distance between node1 and node2
         node1: (x, y) tuple
         node2: (x, y) tuple
         '''
-        return abs(node1[0] - node2[0]) + abs(node1[1] - node2[1])
+        if mode == 0:
+            return abs(node1[0] - node2[0]) + abs(node1[1] - node2[1])
+        elif mode == 1:
+            return (abs(node1[0] - node2[0])**2 
+                    + abs(node1[1] - node2[1])**2)**(1/2)
 
-    def getHeuristic(self, node1, node2):
+    def getHeuristic(self, node1, node2, mode = 0):
         '''Finds manhattan distance between node1 and node2
         node1: (x, y) tuple
         node2: (x, y) tuple
         '''
-        #return abs(node1[0] - node2[0]) + abs(node1[1] - node2[1])
-        return (abs(node1[0] - node2[0])**2 
-                + abs(node1[1] - node2[1])**2)**(1/2)
+        if mode == 0:
+            return abs(node1[0] - node2[0]) + abs(node1[1] - node2[1])
+        elif mode == 1:
+            return (abs(node1[0] - node2[0])**2 
+                    + abs(node1[1] - node2[1])**2)**(1/2)
 
     def cross(self, node1, node2, node3):
         '''Calculates vector cross-product between node1 and node3, 
@@ -178,8 +194,8 @@ class Greedy(AStar):
 
             nbrs = self.board.getNeighbours(cur)
             for nbr in nbrs:
-                cost = self.getCost(cur, nbr) + self.isTurn(prevs[cur], nbr) * 0.5
-                heuristic = self.getHeuristic(nbr, goal)# + self.cross(nbr, start, goal) * 0.001
+                cost = self.getCost(cur, nbr, self.mode_c) + self.isTurn(prevs[cur], nbr) * 0.5
+                heuristic = self.getHeuristic(nbr, goal, self.mode_h)# + self.cross(nbr, start, goal) * 0.001
                 score2nbr = scores[cur] + cost
                 if nbr not in scores or score2nbr < scores[nbr]:
                     # Relax costs if cost is lower
