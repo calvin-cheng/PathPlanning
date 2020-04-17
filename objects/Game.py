@@ -29,11 +29,12 @@ class Game:
     def generate_menus(self):
         menu_sim = Menu(94, 1, 24, 37,
                         [
+                         Spacer(5),
                          Heading('Algorithms', 20),
                          RadioGroupSingle([
-                                          Radio('Dijkstra'),
-                                          Radio('A-Star'),
-                                          Radio('Greedy')
+                                           Radio('Dijkstra'),
+                                           Radio('A Star'),
+                                           Radio('Greedy')
                                           ],
                                           20, 
                                           self.switch_planner),
@@ -42,21 +43,23 @@ class Game:
                                              Radio('Hello'),
                                              Radio('World'),
                                              Radio('Bitch')
-                                             ],
+                                            ],
                                             20),
                          Button('Pathfind!', self.search, 20, 3),
                          Button('Edit Board', self.switch_menu, 20, 3),
-                         Button('Clear', self.board.clearPath, 20, 3),
-                         Button('Quit', self.quit, 8, 3)
+                         ButtonGroup([
+                                      Button('Clear', self.board.clearPath, 13, 3),
+                                      Button('Quit', self.quit, 6, 3)
+                                     ], 20)
                         ],
                         self.screen)
         menu_edit = Menu(94, 1, 24, 37,
                          [
-                         Button('Move Start', self.move_player, 20, 3),
-                         Button('Move Goal', self.move_goal, 20, 3),
-                         Button('Mazify', self.board.mazify, 20, 3),
-                         Button('Reset', self.board.generate, 20, 3),
-                         Button('Done', self.switch_menu, 20, 3)
+                          Button('Move Start', self.move_player, 20, 3),
+                          Button('Move Goal', self.move_goal, 20, 3),
+                          Button('Mazify', self.board.mazify, 20, 3),
+                          Button('Reset', self.board.generate, 20, 3),
+                          Button('Done', self.switch_menu, 20, 3)
                          ],
                          self.screen)
         menus = [menu_sim, menu_edit]
@@ -93,6 +96,10 @@ class Game:
                     self.menus[self.menu].nav(-1)
                 elif key == curses.KEY_DOWN:
                     self.menus[self.menu].nav(1)
+                elif key == curses.KEY_RIGHT:
+                    self.menus[self.menu].navX(1)
+                elif key == curses.KEY_LEFT:
+                    self.menus[self.menu].navX(-1)
                 elif key == ord(' '):
                     self.menus[self.menu].select()
                 elif key == ord('p'):
@@ -150,7 +157,19 @@ class Game:
         self.screen.addstr(1 + self.board.goal[1],
                            2 + self.board.goal[0]*2,
                            '  ', curses.color_pair(3) | curses.A_BOLD)
-        self.screen.refresh()
+#        self.screen.refresh()
+
+    def search(self):
+        self.board.clearPath()
+        d = self.planners[self.planner](self.board)
+        path = d.search(self.board.player, self.board.goal, self.screen)
+        for node in path:
+            i, j = node
+            time.sleep(0.04)
+            self.board[j][i] = 2
+            self.draw_board()
+            self.screen.refresh()
+            curses.flushinp() # Clears key inputs from queue
 
     def switch_player(self):
         self.player = not(self.player)
@@ -166,17 +185,4 @@ class Game:
 
     def quit(self):
         self.isRunning = False
-
-    def search(self):
-        self.board.clearPath()
-        d = self.planners[self.planner](self.board)
-        path = d.search(self.board.player, self.board.goal, self.screen)
-        for node in path:
-            i, j = node
-            time.sleep(0.04)
-            self.board[j][i] = 2
-            self.draw_board()
-            curses.flushinp() # Clears key inputs from queue
-
-
 

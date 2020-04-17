@@ -5,9 +5,11 @@ from objects.Menu import Menu, Radio, Button
 
 def main(stdscr):
     h, w = stdscr.getmaxyx()
-    if h < 39 and w < 136:
+    H_LIM, W_LIM = 38, 120
+    if h < H_LIM and w < W_LIM:
         curses.endwin()
-        print('Window must be at least 136 by 39!')
+        print()
+        print('Window must be at least {} by {}!'.format(H_LIM, W_LIM))
         print('Current size: {} by {}.'.format(w, h))
         return
     else:

@@ -11,7 +11,7 @@ class Menu:
 
         self.items = items
         self.pos = 0
-        while isinstance(self.items[self.pos], Text):
+        while isinstance(self.items[self.pos], (Text, Spacer)):
             self.pos += 1
 
     def display(self):
@@ -31,10 +31,17 @@ class Menu:
         if self.items[self.pos].focus(n):
             self.pos += n
             self.pos = self.pos % len(self.items)
-            if isinstance(self.items[self.pos], Text):
+            while isinstance(self.items[self.pos], (Text, Spacer)):
                 self.nav(n)
         else:
             self.items[self.pos].nav(n)
+
+    def navX(self, n):
+        try:
+            self.items[self.pos].navX(n)
+        except:
+            pass
+
 
     def select(self):
         self.items[self.pos].run()
@@ -138,6 +145,32 @@ class Button:
         '''Returns True if key up/down allowed to nav away from button'''
         return True
 
+class ButtonGroup:
+    def __init__(self, buttons, width):
+        self.buttons = buttons
+        self.pos = 0
+        self.width = width
+        self.height = max([button.height for button in buttons])
+
+    def display(self, x, y, width, height, selected, screen):
+        dx = 2
+        for idx, button in enumerate(self.buttons):
+            button_selected = True if selected and idx == self.pos else False
+            button.display(dx, y, button.width, button.height, button_selected, screen)
+            dx += button.width + 1
+
+    def run(self):
+        self.buttons[self.pos].run()
+
+    def navX(self, n):
+        self.pos += n
+        self.pos = self.pos % len(self.buttons)
+
+    def focus(self, n):
+        '''Returns True if key up/down allowed to nav away from button'''
+        return True
+
+
 class Text:
     def __init__(self, text, width):
         self.text = text
@@ -147,6 +180,17 @@ class Text:
     def focus(self, n):
         return True
 
+class Spacer:
+    def __init__(self, height):
+        self.height = height
+        self.width = 0
+
+    def display(self, x, y, width, height, selected, screen):
+        return
+
+    def focus(self, n):
+        return True
+        
 class Heading(Text):
     def display(self, x, y, width, height, selected, screen):
         sep = ' ' + '–' * (width - len(self.text) - 1)
