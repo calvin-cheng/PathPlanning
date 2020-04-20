@@ -1,6 +1,6 @@
 import curses
 import time
-from objects.PathPlanners import Dijkstra, AStar, Greedy
+from objects.PathPlanners import Dijkstra, AStar, Greedy, DijkstraBD, AStarBD, GreedyBD
 from objects.Board import Board
 from objects.Menu import *
 
@@ -22,7 +22,9 @@ class Game:
         self.player = True
         self.players = {True: self.board.player, False: self.board.goal}
         self.planner = 0
-        self.planners = {0: Dijkstra, 1: AStar, 2: Greedy}
+        self.planners = {0: [Dijkstra, DijkstraBD], 
+                         1: [AStar, AStarBD], 
+                         2: [Greedy, GreedyBD]}
         self.isRunning = True
 
 
@@ -35,7 +37,7 @@ class Game:
                          RadioGroupSingle([
                                            Radio('Dijkstra'),
                                            Radio('A Star'),
-                                           Radio('Greedy')
+                                           Radio('Best First')
                                           ],
                                           20),
                          Heading('Cost', 20),
@@ -55,7 +57,7 @@ class Game:
                                              Radio('Bidirectional'),
                                             ],
                                             20),
-                         Button('Pathfind!', self.search, 20, 3),
+                         Button('Pathfind', self.search, 20, 3),
                          Button('Edit Board', self.switch_menu, 20, 3),
                          ButtonGroup([
                                       Button('Clear', self.board.clearPath, 13, 3),
@@ -90,12 +92,12 @@ class Game:
         curses.use_default_colors()
 
         # (i, fg, bg), 0 reserved. fg, bg = -1 for default values
-        curses.init_pair(1, -1, -1)  # Gap
+        curses.init_pair(1, curses.COLOR_WHITE, -1)  # Gap
         curses.init_pair(2, curses.COLOR_BLACK, curses.COLOR_RED)    # Player
         curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_GREEN) # Goal
         curses.init_pair(4, curses.COLOR_YELLOW, curses.COLOR_YELLOW) # Path
-        curses.init_pair(5, curses.COLOR_WHITE, curses.COLOR_WHITE) # Visited
-        curses.init_pair(6, curses.COLOR_CYAN, curses.COLOR_CYAN) # Frontier
+        curses.init_pair(5, curses.COLOR_WHITE, -1) # Visited
+        curses.init_pair(6, curses.COLOR_CYAN, -1) # Frontier
 
     def start(self):
         while self.isRunning:
@@ -148,14 +150,14 @@ class Game:
                     string = '  '
                     attr = curses.color_pair(1) | curses.A_BOLD | curses.A_STANDOUT
                 elif self.board[j][i] == 2: # Path
-                    string = '  '
-                    attr = curses.color_pair(4)
+                    string = u'\u2805'*2
+                    attr = curses.color_pair(4) | curses.A_BOLD
                 elif self.board[j][i] == 3: # Visited
-                    string = '  '
-                    attr = curses.color_pair(5)
-                elif self.board[j][i] == 4: # Marked
-                    string = '  '
-                    attr = curses.color_pair(6) | curses.A_STANDOUT
+                    string = u'\u2805'*2
+                    attr = curses.color_pair(5)# | curses.A_BOLD
+                elif self.board[j][i] == 4: # Fronter
+                    string = u'\u2805'*2
+                    attr = curses.color_pair(6)# | curses.A_STANDOUT
 
                 self.screen.addstr(1 + j, 2 + i * 2, string, attr)
 
@@ -166,22 +168,23 @@ class Game:
         # Draw goal
         self.screen.addstr(1 + self.board.goal[1],
                            2 + self.board.goal[0]*2,
-                           '  ', curses.color_pair(3) | curses.A_BOLD)
-#        self.screen.refresh()
+                           u'\U0001F907\U0001F907', curses.color_pair(3) | curses.A_BOLD)
+        self.screen.refresh()
 
     def search(self):
         self.board.clearPath()
         mode_c = self.menus[0].items[5].state
         mode_h = self.menus[0].items[7].state
         planner = self.menus[0].items[3].state
-        d = self.planners[planner](self.board, mode_c, mode_h)
+        bd = self.menus[0].items[9].radios[0].state
+        d = self.planners[planner][bd](self.board, mode_c, mode_h)
         path = d.search(self.board.player, self.board.goal, self.screen)
         for node in path:
             i, j = node
             time.sleep(0.04)
             self.board[j][i] = 2
             self.draw_board()
-            self.screen.refresh()
+#            self.screen.refresh()
             curses.flushinp() # Clears key inputs from queue
 
     def switch_player(self):

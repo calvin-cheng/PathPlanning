@@ -5,8 +5,8 @@ from objects.Menu import Menu, Radio, Button
 
 def main(stdscr):
     h, w = stdscr.getmaxyx()
-    H_LIM, W_LIM = 38, 120
-    if h < H_LIM and w < W_LIM:
+    H_LIM, W_LIM = 39, 120
+    if h < H_LIM or w < W_LIM:
         curses.endwin()
         print()
         print('Window must be at least {} by {}!'.format(H_LIM, W_LIM))

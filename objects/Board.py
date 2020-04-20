@@ -45,14 +45,14 @@ class Board:
                     string = '  '
                     attr = curses.color_pair(1) | curses.A_BOLD | curses.A_STANDOUT
                 elif self.board[j][i] == 2: # Path
-                    string = '  '
-                    attr = curses.color_pair(4)
+                    string = u'\u2805\u2805'
+                    attr = curses.color_pair(4) | curses.A_BOLD
                 elif self.board[j][i] == 3: # Visited
-                    string = '  '
-                    attr = curses.color_pair(5)
-                elif self.board[j][i] == 4: # Marked
-                    string = '  '
-                    attr = curses.color_pair(6) | curses.A_STANDOUT
+                    string = u'\u2805'*2 
+                    attr = curses.color_pair(5)# | curses.A_BOLD
+                elif self.board[j][i] == 4: # Frontier
+                    string = u'\u2805'*2 
+                    attr = curses.color_pair(6)# | curses.A_STANDOUT
 
                 screen.addstr(1 + j, 2 + i * 2, string, attr)
 
@@ -63,7 +63,7 @@ class Board:
         # Draw goal
         screen.addstr(1 + self.goal[1],
                       2 + self.goal[0]*2,
-                      '  ', curses.color_pair(3) | curses.A_BOLD)
+                      u'\U0001F907\U0001F907', curses.color_pair(3) | curses.A_BOLD)
         screen.refresh()
 
 
