@@ -1,4 +1,4 @@
-<img src="images/screen.png" style="zoom:28%;" />
+<img src="images/screen.png" style="zoom:25%;" />
 
 
 
