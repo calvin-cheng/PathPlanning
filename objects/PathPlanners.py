@@ -11,6 +11,7 @@ class Dijkstra:
 
     def search(self, start, goal, screen = None):
         '''Performs search using Dijkstra's algorithm
+        Animates screen if screen is provided
         start: (x, y) tuple
         goal: (x, y) tuple
         '''
@@ -27,8 +28,9 @@ class Dijkstra:
             cur_x, cur_y = cur
 
             self.board[cur_y][cur_x] = 3 # Mark as "seen"
-            self.board.draw_cell(cur_x, cur_y, screen)
-            self.board.draw_player(screen)
+            if screen:
+                self.board.draw_cell(cur_x, cur_y, screen)
+                self.board.draw_player(screen)
 
             if cur == goal:
                 break
@@ -40,7 +42,9 @@ class Dijkstra:
                 if nbr not in costs or cost2nbr < costs[nbr]:
                     # Mark as frontier
                     self.board[nbr[1]][nbr[0]] = 4 
-                    self.board.draw_cell(nbr[0], nbr[1], screen)
+
+                    if screen:
+                        self.board.draw_cell(nbr[0], nbr[1], screen)
 
                     # Relax costs if cost is lower
                     costs[nbr] = cost2nbr
@@ -60,10 +64,11 @@ class Dijkstra:
             i, j = prev
         return reversed(path)
 
-    def getCost(self, node1, node2, mode):
+    def getCost(self, node1, node2, mode = 0):
         '''Finds distance between node1 and node2
         node1: (x, y) tuple
         node2: (x, y) tuple
+        mode: 0 - Manhattan, 1 - Euclidean
         '''
         if mode == 0:
             return abs(node1[0] - node2[0]) + abs(node1[1] - node2[1])
@@ -82,6 +87,7 @@ class Dijkstra:
 class AStar(Dijkstra):
     def search(self, start, goal, screen = None):
         '''Performs search using AStar algorithm
+        Animates screen if screen is provided
         start: (x, y) tuple
         goal: (x, y) tuple
         '''
@@ -99,22 +105,23 @@ class AStar(Dijkstra):
 
             # Mark as seen
             self.board[cur_y][cur_x] = 3
-            self.board.draw_cell(cur_x, cur_y, screen)
-            self.board.draw_player(screen)
+            if screen:
+                self.board.draw_cell(cur_x, cur_y, screen)
+                self.board.draw_player(screen)
 
-            if cur == goal:
-                break
+            if cur == goal: 
+                break 
 
             nbrs = self.board.getNeighbours(cur)
             for nbr in nbrs:
                 cost = (self.getCost(cur, nbr, self.mode_c) + self.isTurn(prevs[cur], nbr) * 0.2)
                 heuristic = (self.getHeuristic(nbr, goal, self.mode_h))
-#                             + self.cross(nbr, start, goal) * 0.000)
                 score2nbr = scores[cur] + cost
                 if nbr not in scores or score2nbr < scores[nbr]:
                     # Mark as "frontier"
                     self.board[nbr[1]][nbr[0]] = 4
-                    self.board.draw_cell(nbr[0], nbr[1], screen)
+                    if screen:
+                        self.board.draw_cell(nbr[0], nbr[1], screen)
 
                     # Relax costs
                     scores[nbr] = score2nbr
@@ -138,6 +145,7 @@ class AStar(Dijkstra):
         '''Finds manhattan distance between node1 and node2
         node1: (x, y) tuple
         node2: (x, y) tuple
+        mode: 0 - Manhattan, 1 - Euclidean
         '''
         if mode == 0:
             return abs(node1[0] - node2[0]) + abs(node1[1] - node2[1])
@@ -160,6 +168,7 @@ class AStar(Dijkstra):
 class Greedy(AStar):
     def search(self, start, goal, screen = None):
         '''Performs greedy search
+        Animates screen if screen is provided
         start: (x, y) tuple
         goal: (x, y) tuple
         '''
@@ -176,20 +185,22 @@ class Greedy(AStar):
             cur_x, cur_y = cur
 
             self.board[cur_y][cur_x] = 3 # Mark as "seen"
-            self.board.draw_cell(cur_x, cur_y, screen)
+            if screen:
+                self.board.draw_cell(cur_x, cur_y, screen)
 
             if cur == goal:
                 break
 
             nbrs = self.board.getNeighbours(cur)
             for nbr in nbrs:
-                cost = self.getCost(cur, nbr, self.mode_c) + self.isTurn(prevs[cur], nbr) * 1
-                heuristic = self.getHeuristic(nbr, goal, self.mode_h)# + self.cross(nbr, start, goal) * 0.001
+                cost = self.getCost(cur, nbr, self.mode_c) + self.isTurn(prevs[cur], nbr)
+                heuristic = self.getHeuristic(nbr, goal, self.mode_h)
                 score2nbr = scores[cur] + cost
                 if nbr not in scores or score2nbr < scores[nbr]:
                     # Mark as frontier
                     self.board[nbr[1]][nbr[0]] = 4
-                    self.board.draw_cell(nbr[0], nbr[1], screen)
+                    if screen:
+                        self.board.draw_cell(nbr[0], nbr[1], screen)
                     
                     # Relax costs if cost is lower
                     scores[nbr] = score2nbr
@@ -213,6 +224,7 @@ class Greedy(AStar):
 class DijkstraBD(Dijkstra):
     def search(self, start, goal, screen = None):
         '''Performs search using Dijkstra's algorithm
+        Animates screen if screen is provided
         start: (x, y) tuple
         goal: (x, y) tuple
         '''
@@ -236,9 +248,10 @@ class DijkstraBD(Dijkstra):
             cur = pq_s.dequeue()
             cur_x, cur_y = cur
 
-            self.board[cur_y][cur_x] = 3 # Mark as "seen"
-            self.board.draw_cell(cur_x, cur_y, screen)
-            self.board.draw_player(screen)
+            # Mark as seen
+            self.board[cur_y][cur_x] = 3
+            if screen:
+                 self.board.draw_cell(cur_x, cur_y, screen)
 
             nbrs = self.board.getNeighbours(cur)
             for nbr in nbrs:
@@ -257,9 +270,10 @@ class DijkstraBD(Dijkstra):
             cur = pq_g.dequeue()
             cur_x, cur_y = cur
 
-            self.board[cur_y][cur_x] = 3 # Mark as "seen"
-            self.board.draw_cell(cur_x, cur_y, screen)
-            self.board.draw_player(screen)
+            # Mark as seen
+            self.board[cur_y][cur_x] = 3
+            if screen:
+                self.board.draw_cell(cur_x, cur_y, screen)
 
             if cur in costs_s:
                 break
@@ -271,7 +285,8 @@ class DijkstraBD(Dijkstra):
                 if nbr not in costs_g or cost2nbr < costs_g[nbr]:
                     # Mark as frontier
                     self.board[nbr[1]][nbr[0]] = 4
-                    self.board.draw_cell(nbr[0], nbr[1], screen)
+                    if screen:
+                        self.board.draw_cell(nbr[0], nbr[1], screen)
 
                     # Relax costs
                     costs_g[nbr] = cost2nbr
@@ -302,8 +317,10 @@ class DijkstraBD(Dijkstra):
 class AStarBD(AStar):
     def search(self, start, goal, screen = None):
         '''Performs bidirectional search using AStar algorithm
+        Animates screen if screen is provided
         start: (x, y) tuple
         goal: (x, y) tuple
+        screen: curses.window object
         '''
         costs_s = {}
         prevs_s = {}
@@ -325,8 +342,10 @@ class AStarBD(AStar):
             cur = pq_s.dequeue()
             cur_x, cur_y = cur
 
-            self.board[cur_y][cur_x] = 3 # Mark as "seen"
-            self.board.draw_cell(cur_x, cur_y, screen)
+            # Mark as seen
+            self.board[cur_y][cur_x] = 3
+            if screen:
+                self.board.draw_cell(cur_x, cur_y, screen)
 
             nbrs = self.board.getNeighbours(cur)
             for nbr in nbrs:
@@ -336,7 +355,8 @@ class AStarBD(AStar):
                 if nbr not in costs_s or cost2nbr < costs_s[nbr]:
                     # Mark as frontier
                     self.board[nbr[1]][nbr[0]] = 4
-                    self.board.draw_cell(nbr[0], nbr[1], screen)
+                    if screen:
+                        self.board.draw_cell(nbr[0], nbr[1], screen)
                     
                     # Relax costs if cost is lower
                     costs_s[nbr] = cost2nbr
@@ -347,7 +367,8 @@ class AStarBD(AStar):
             cur_x, cur_y = cur
 
             self.board[cur_y][cur_x] = 3 # Mark as "seen"
-            self.board.draw_cell(cur_x, cur_y, screen)
+            if screen:
+                self.board.draw_cell(cur_x, cur_y, screen)
 
             if cur in costs_s:
                 break
@@ -359,7 +380,8 @@ class AStarBD(AStar):
                 heuristic = self.getHeuristic(nbr, start, self.mode_h)
                 if nbr not in costs_g or cost2nbr < costs_g[nbr]:
                     self.board[nbr[1]][nbr[0]] = 4 # Mark as "frontier"
-                    self.board.draw_cell(nbr[0], nbr[1], screen)
+                    if screen:
+                        self.board.draw_cell(nbr[0], nbr[1], screen)
 
                     # Relax costs
                     costs_g[nbr] = cost2nbr
@@ -415,7 +437,8 @@ class GreedyBD(Greedy):
             cur_x, cur_y = cur
 
             self.board[cur_y][cur_x] = 3 # Mark as "seen"
-            self.board.draw_cell(cur_x, cur_y, screen)
+            if screen:
+                self.board.draw_cell(cur_x, cur_y, screen)
 
             nbrs = self.board.getNeighbours(cur)
             for nbr in nbrs:
@@ -425,7 +448,8 @@ class GreedyBD(Greedy):
                 if nbr not in costs_s or cost2nbr < costs_s[nbr]:
                     # Relax costs if cost is lower
                     self.board[nbr[1]][nbr[0]] = 4 # Mark as "frontier"
-                    self.board.draw_cell(nbr[0], nbr[1], screen)
+                    if screen:
+                        self.board.draw_cell(nbr[0], nbr[1], screen)
 
                     # Relax costs
                     costs_s[nbr] = cost2nbr
@@ -436,7 +460,8 @@ class GreedyBD(Greedy):
             cur_x, cur_y = cur
 
             self.board[cur_y][cur_x] = 3 # Mark as "seen"
-            self.board.draw_cell(cur_x, cur_y, screen)
+            if screen:
+                self.board.draw_cell(cur_x, cur_y, screen)
 
             if cur in costs_s:
                 break
@@ -448,7 +473,8 @@ class GreedyBD(Greedy):
                 heuristic = self.getHeuristic(nbr, start, self.mode_h)
                 if nbr not in costs_g or cost2nbr < costs_g[nbr]: # Relax costs if cost is lower
                     self.board[nbr[1]][nbr[0]] = 4 # Mark as "frontier"
-                    self.board.draw_cell(nbr[0], nbr[1], screen)
+                    if screen:
+                        self.board.draw_cell(nbr[0], nbr[1], screen)
 
                     # Relax costs
                     costs_g[nbr] = cost2nbr

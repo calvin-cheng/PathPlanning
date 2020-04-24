@@ -7,7 +7,6 @@ from objects.Menu import *
 
 class Game:
     def __init__(self, board, screen):
-
         self.mode = True # False - Map Edit Mode, True - Simulation
 
         self.board = board
@@ -25,6 +24,8 @@ class Game:
         self.planners = {0: [Dijkstra, DijkstraBD], 
                          1: [AStar, AStarBD], 
                          2: [Greedy, GreedyBD]}
+
+        self.searchActive = False
         self.isRunning = True
 
 
@@ -60,7 +61,7 @@ class Game:
                          Button('Pathfind', self.search, 20, 3),
                          Button('Edit Board', self.switch_menu, 20, 3),
                          ButtonGroup([
-                                      Button('Clear', self.board.clearPath, 13, 3),
+                                      Button('Clear', self.clear, 13, 3),
                                       Button('Quit', self.quit, 6, 3)
                                      ], 20)
                         ],
@@ -116,7 +117,7 @@ class Game:
                     self.menus[self.menu].select()
             else: 
                 # Map-edit
-                # TODO: Fix below
+                # Update player or goal position
                 self.players = {True: self.board.player, False: self.board.goal}
                 if key == curses.KEY_UP:
                     self.board.moveNode(self.players[self.player], 'U')
@@ -128,10 +129,13 @@ class Game:
                     self.board.moveNode(self.players[self.player], 'L')
                 elif key == ord(' '):
                     self.switch_mode()
+                if self.searchActive:
+                    self.search(False)
+
             self.board.draw(self.screen)
             self.menus[self.menu].display()
 
-    def search(self):
+    def search(self, animate = True):
         self.board.clearPath()
         self.board.draw(self.screen)
 
@@ -141,7 +145,11 @@ class Game:
         bd = self.menus[0].items[9].radios[0].state
 
         pathfinder = self.planners[planner][bd](self.board, mode_c, mode_h)
-        path = pathfinder.search(self.board.player, self.board.goal, self.screen)
+        if animate:
+            path = pathfinder.search(self.board.player, self.board.goal, self.screen)
+        else:
+            path = pathfinder.search(self.board.player, self.board.goal)
+
         for node in path:
             i, j = node
 
@@ -149,11 +157,12 @@ class Game:
             self.board.draw_cell(i, j, self.screen)
             self.board.draw_player(self.screen)
             self.board.draw_goal(self.screen)
-            self.screen.refresh()
-
-            time.sleep(0.03)
+            if animate:
+                self.screen.refresh()
+                time.sleep(0.03)
 
         curses.flushinp() # Clears key inputs from queue
+        self.searchActive = True
 
     def switch_player(self):
         self.player = not(self.player)
@@ -166,6 +175,10 @@ class Game:
 
     def switch_mode(self):
         self.mode = not(self.mode)
+
+    def clear(self):
+        self.searchActive = False
+        self.board.clearPath()
 
     def quit(self):
         self.isRunning = False
