@@ -1,4 +1,4 @@
-<img src="images/screenWindow.png" style="zoom:3%;"/>
+<img src="images/screen.png" style="zoom:3%;"/>
 
 
 # Path Planning
