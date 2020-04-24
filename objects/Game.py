@@ -70,7 +70,7 @@ class Game:
                          [
                           Button('Move Start', self.move_player, 20, 3),
                           Button('Move Goal', self.move_goal, 20, 3),
-                          Button('Mazify', self.board.mazify, 20, 3),
+                          Button('Mazify', self.mazify, 20, 3),
                           Button('Reset', self.board.generate, 20, 3),
                           Button('Done', self.switch_menu, 20, 3)
                          ],
@@ -139,20 +139,22 @@ class Game:
         self.board.clearPath()
         self.board.draw(self.screen)
 
+        # Set pathfinding parameters
         mode_c = self.menus[0].items[5].state
         mode_h = self.menus[0].items[7].state
         planner = self.menus[0].items[3].state
         bd = self.menus[0].items[9].radios[0].state
 
+        # Create pathfinder object
         pathfinder = self.planners[planner][bd](self.board, mode_c, mode_h)
         if animate:
             path = pathfinder.search(self.board.player, self.board.goal, self.screen)
         else:
             path = pathfinder.search(self.board.player, self.board.goal)
 
+        # Draw path
         for node in path:
             i, j = node
-
             self.board[j][i] = 2
             self.board.draw_cell(i, j, self.screen)
             self.board.draw_player(self.screen)
@@ -172,9 +174,14 @@ class Game:
 
     def switch_menu(self):
         self.menu = (self.menu + 1) % 2
+        self.menus[self.menu].show()
 
     def switch_mode(self):
         self.mode = not(self.mode)
+
+    def mazify(self):
+        self.searchActive = False
+        self.board.mazify()
 
     def clear(self):
         self.searchActive = False

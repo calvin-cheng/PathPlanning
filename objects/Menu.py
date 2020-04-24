@@ -18,11 +18,13 @@ class Menu:
         while self.pos < len(self.items) and isinstance(self.items[self.pos], (Text, Spacer)):
             self.pos += 1
 
-    def display(self):
-        '''Draws self on screen'''
+    def show(self):
         self.panel.top()
         self.panel.show()
         self.window.clear()
+
+    def display(self):
+        '''Draws self on screen'''
         y = 0
         for idx, item in enumerate(self.items):
             selected = True if idx == self.pos else False

@@ -49,10 +49,10 @@ class Board:
                     attr = curses.color_pair(4) | curses.A_BOLD
                 elif self.board[j][i] == 3: # Visited
                     string = u'\u2805'*2 
-                    attr = curses.color_pair(5)# | curses.A_BOLD
+                    attr = curses.color_pair(5) | curses.A_BOLD
                 elif self.board[j][i] == 4: # Frontier
                     string = u'\u2805'*2 
-                    attr = curses.color_pair(6)# | curses.A_STANDOUT
+                    attr = curses.color_pair(6) | curses.A_BOLD #| curses.A_STANDOUT
 
                 screen.addstr(1 + j, 2 + i * 2, string, attr)
 
@@ -71,10 +71,10 @@ class Board:
             attr = curses.color_pair(4) | curses.A_BOLD
         elif self.board[j][i] == 3: # Visited
             string = u'\u2805'*2 
-            attr = curses.color_pair(5)# | curses.A_BOLD
+            attr = curses.color_pair(5) | curses.A_BOLD
         elif self.board[j][i] == 4: # Frontier
             string = u'\u2805'*2 
-            attr = curses.color_pair(6)# | curses.A_STANDOUT
+            attr = curses.color_pair(6) | curses.A_BOLD #| curses.A_STANDOUT
 
         screen.addstr(1 + j, 2 + i * 2, string, attr)
 

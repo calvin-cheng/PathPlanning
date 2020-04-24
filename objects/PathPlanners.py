@@ -260,7 +260,8 @@ class DijkstraBD(Dijkstra):
                 if nbr not in costs_s or cost2nbr < costs_s[nbr]:
                     # Mark as frontier
                     self.board[nbr[1]][nbr[0]] = 4 
-                    self.board.draw_cell(nbr[0], nbr[1], screen)
+                    if screen:
+                        self.board.draw_cell(nbr[0], nbr[1], screen)
 
                     # Relax costs if cost is lower
                     costs_s[nbr] = cost2nbr
