@@ -1,4 +1,4 @@
-<img src="images/screen.png" style="zoom:16%;"/>
+<img src="images/screen.png" style="zoom:10%;"/>
 
 
 # Path Planning
@@ -24,5 +24,5 @@ python3 main.py
 * Implement other searches (BFS, DFS, ~~Greedy~~, ~~Bidirectional~~, NBA*, etc)
 * ~~Prettier visualisation~~ (Added 19/04/20)
 * Better board-editing functionalities
-* Various bug-fixes (inconsistent turn costs, screen flicker)
+* Various bug-fixes (inconsistent turn costs, ~~screen flicker~~)
 
