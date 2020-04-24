@@ -10,7 +10,7 @@ class Dijkstra:
         self.mode_h = mode_h
 
     def search(self, start, goal, screen = None):
-        '''Performs search using Djikstra's algorithm
+        '''Performs search using Dijkstra's algorithm
         start: (x, y) tuple
         goal: (x, y) tuple
         '''
@@ -19,14 +19,16 @@ class Dijkstra:
         costs[start] = 0
         prevs[start] = None
 
-#        pq = PriorityQueue([], [])
         pq = PriorityQueue2()
         pq.enqueue(start, costs[start])
 
         while not pq.isEmpty():
             cur = pq.dequeue()
             cur_x, cur_y = cur
+
             self.board[cur_y][cur_x] = 3 # Mark as "seen"
+            self.board.draw_cell(cur_x, cur_y, screen)
+            self.board.draw_player(screen)
 
             if cur == goal:
                 break
@@ -36,13 +38,18 @@ class Dijkstra:
                 turnCost = self.isTurn(prevs[cur], nbr) * 0.2
                 cost2nbr = costs[cur] + self.getCost(cur, nbr, self.mode_c) + turnCost
                 if nbr not in costs or cost2nbr < costs[nbr]:
+                    # Mark as frontier
+                    self.board[nbr[1]][nbr[0]] = 4 
+                    self.board.draw_cell(nbr[0], nbr[1], screen)
+
                     # Relax costs if cost is lower
-                    self.board[nbr[1]][nbr[0]] = 4 # Mark as "frontier"
                     costs[nbr] = cost2nbr
                     prevs[nbr] = cur
                     pq.enqueue(nbr, cost2nbr) # Multiple nodes possible!
             if screen:
-                self.board.draw(screen)
+                self.board.draw_player(screen)
+                self.board.draw_goal(screen)
+                screen.refresh()
 
         # Recreate path
         path = [goal]
@@ -74,7 +81,7 @@ class Dijkstra:
 
 class AStar(Dijkstra):
     def search(self, start, goal, screen = None):
-        '''Performs search using Djikstra's algorithm
+        '''Performs search using AStar algorithm
         start: (x, y) tuple
         goal: (x, y) tuple
         '''
@@ -83,14 +90,17 @@ class AStar(Dijkstra):
         scores[start] = 0
         prevs[start] = None
 
-#        pq = PriorityQueue([], [])
         pq = PriorityQueue2()
         pq.enqueue(start, scores[start])
 
         while not pq.isEmpty():
             cur = pq.dequeue()
             cur_x, cur_y = cur
-            self.board[cur_y][cur_x] = 3 # Mark as "seen"
+
+            # Mark as seen
+            self.board[cur_y][cur_x] = 3
+            self.board.draw_cell(cur_x, cur_y, screen)
+            self.board.draw_player(screen)
 
             if cur == goal:
                 break
@@ -102,13 +112,18 @@ class AStar(Dijkstra):
 #                             + self.cross(nbr, start, goal) * 0.000)
                 score2nbr = scores[cur] + cost
                 if nbr not in scores or score2nbr < scores[nbr]:
-                    # Relax costs if cost is lower
-                    self.board[nbr[1]][nbr[0]] = 4 # Mark as "frontier"
+                    # Mark as "frontier"
+                    self.board[nbr[1]][nbr[0]] = 4
+                    self.board.draw_cell(nbr[0], nbr[1], screen)
+
+                    # Relax costs
                     scores[nbr] = score2nbr
                     prevs[nbr] = cur
                     pq.enqueue(nbr, score2nbr + heuristic * 0.999) # Multiple nodes possible!
             if screen:
-                self.board.draw(screen)
+                self.board.draw_player(screen)
+                self.board.draw_goal(screen)
+                screen.refresh()
 
         # Recreate path
         path = [goal]
@@ -144,7 +159,7 @@ class AStar(Dijkstra):
 
 class Greedy(AStar):
     def search(self, start, goal, screen = None):
-        '''Performs search using AStar algorithm
+        '''Performs greedy search
         start: (x, y) tuple
         goal: (x, y) tuple
         '''
@@ -153,14 +168,15 @@ class Greedy(AStar):
         scores[start] = 0
         prevs[start] = None
 
-#        pq = PriorityQueue([], [])
         pq = PriorityQueue2()
         pq.enqueue(start, scores[start])
 
         while not pq.isEmpty():
             cur = pq.dequeue()
             cur_x, cur_y = cur
+
             self.board[cur_y][cur_x] = 3 # Mark as "seen"
+            self.board.draw_cell(cur_x, cur_y, screen)
 
             if cur == goal:
                 break
@@ -171,13 +187,18 @@ class Greedy(AStar):
                 heuristic = self.getHeuristic(nbr, goal, self.mode_h)# + self.cross(nbr, start, goal) * 0.001
                 score2nbr = scores[cur] + cost
                 if nbr not in scores or score2nbr < scores[nbr]:
+                    # Mark as frontier
+                    self.board[nbr[1]][nbr[0]] = 4
+                    self.board.draw_cell(nbr[0], nbr[1], screen)
+                    
                     # Relax costs if cost is lower
-                    self.board[nbr[1]][nbr[0]] = 4 # Mark as "frontier"
                     scores[nbr] = score2nbr
                     prevs[nbr] = cur
                     pq.enqueue(nbr, heuristic) # Multiple nodes possible!
             if screen:
-                self.board.draw(screen)
+                self.board.draw_player(screen)
+                self.board.draw_goal(screen)
+                screen.refresh()
 
         # Recreate path
         path = [goal]
@@ -191,7 +212,7 @@ class Greedy(AStar):
 
 class DijkstraBD(Dijkstra):
     def search(self, start, goal, screen = None):
-        '''Performs search using Djikstra's algorithm
+        '''Performs search using Dijkstra's algorithm
         start: (x, y) tuple
         goal: (x, y) tuple
         '''
@@ -214,22 +235,31 @@ class DijkstraBD(Dijkstra):
         while not pq_s.isEmpty() and not pq_g.isEmpty():
             cur = pq_s.dequeue()
             cur_x, cur_y = cur
+
             self.board[cur_y][cur_x] = 3 # Mark as "seen"
+            self.board.draw_cell(cur_x, cur_y, screen)
+            self.board.draw_player(screen)
 
             nbrs = self.board.getNeighbours(cur)
             for nbr in nbrs:
                 turnCost = self.isTurn(prevs_s[cur], nbr) * 0.2
                 cost2nbr = costs_s[cur] + self.getCost(cur, nbr, self.mode_c) + turnCost
                 if nbr not in costs_s or cost2nbr < costs_s[nbr]:
+                    # Mark as frontier
+                    self.board[nbr[1]][nbr[0]] = 4 
+                    self.board.draw_cell(nbr[0], nbr[1], screen)
+
                     # Relax costs if cost is lower
-                    self.board[nbr[1]][nbr[0]] = 4 # Mark as "frontier"
                     costs_s[nbr] = cost2nbr
                     prevs_s[nbr] = cur
                     pq_s.enqueue(nbr, cost2nbr) # Multiple nodes possible!
 
             cur = pq_g.dequeue()
             cur_x, cur_y = cur
+
             self.board[cur_y][cur_x] = 3 # Mark as "seen"
+            self.board.draw_cell(cur_x, cur_y, screen)
+            self.board.draw_player(screen)
 
             if cur in costs_s:
                 break
@@ -238,14 +268,20 @@ class DijkstraBD(Dijkstra):
             for nbr in nbrs:
                 turnCost = self.isTurn(prevs_g[cur], nbr) * 0.2
                 cost2nbr = costs_g[cur] + self.getCost(cur, nbr, self.mode_c) + turnCost
-                if nbr not in costs_g or cost2nbr < costs_g[nbr]: # Relax costs if cost is lower
-                    self.board[nbr[1]][nbr[0]] = 4 # Mark as "frontier"
+                if nbr not in costs_g or cost2nbr < costs_g[nbr]:
+                    # Mark as frontier
+                    self.board[nbr[1]][nbr[0]] = 4
+                    self.board.draw_cell(nbr[0], nbr[1], screen)
+
+                    # Relax costs
                     costs_g[nbr] = cost2nbr
                     prevs_g[nbr] = cur
                     pq_g.enqueue(nbr, cost2nbr) # Multiple nodes possible!
 
             if screen:
-                self.board.draw(screen)
+                self.board.draw_player(screen)
+                self.board.draw_goal(screen)
+                screen.refresh()
 
         # Recreate path
         path = [cur]
@@ -265,7 +301,7 @@ class DijkstraBD(Dijkstra):
 
 class AStarBD(AStar):
     def search(self, start, goal, screen = None):
-        '''Performs bidirectional search using A* algorithm
+        '''Performs bidirectional search using AStar algorithm
         start: (x, y) tuple
         goal: (x, y) tuple
         '''
@@ -288,7 +324,9 @@ class AStarBD(AStar):
         while not pq_s.isEmpty() and not pq_g.isEmpty():
             cur = pq_s.dequeue()
             cur_x, cur_y = cur
+
             self.board[cur_y][cur_x] = 3 # Mark as "seen"
+            self.board.draw_cell(cur_x, cur_y, screen)
 
             nbrs = self.board.getNeighbours(cur)
             for nbr in nbrs:
@@ -296,15 +334,20 @@ class AStarBD(AStar):
                 cost2nbr = costs_s[cur] + self.getCost(cur, nbr, self.mode_c) + turnCost
                 heuristic = self.getHeuristic(nbr, goal, self.mode_h)
                 if nbr not in costs_s or cost2nbr < costs_s[nbr]:
+                    # Mark as frontier
+                    self.board[nbr[1]][nbr[0]] = 4
+                    self.board.draw_cell(nbr[0], nbr[1], screen)
+                    
                     # Relax costs if cost is lower
-                    self.board[nbr[1]][nbr[0]] = 4 # Mark as "frontier"
                     costs_s[nbr] = cost2nbr
                     prevs_s[nbr] = cur
                     pq_s.enqueue(nbr, cost2nbr + heuristic * 0.999) # Multiple nodes possible!
 
             cur = pq_g.dequeue()
             cur_x, cur_y = cur
+
             self.board[cur_y][cur_x] = 3 # Mark as "seen"
+            self.board.draw_cell(cur_x, cur_y, screen)
 
             if cur in costs_s:
                 break
@@ -314,14 +357,19 @@ class AStarBD(AStar):
                 turnCost = self.isTurn(prevs_g[cur], nbr) * 0.2
                 cost2nbr = costs_g[cur] + self.getCost(cur, nbr, self.mode_c) + turnCost
                 heuristic = self.getHeuristic(nbr, start, self.mode_h)
-                if nbr not in costs_g or cost2nbr < costs_g[nbr]: # Relax costs if cost is lower
+                if nbr not in costs_g or cost2nbr < costs_g[nbr]:
                     self.board[nbr[1]][nbr[0]] = 4 # Mark as "frontier"
+                    self.board.draw_cell(nbr[0], nbr[1], screen)
+
+                    # Relax costs
                     costs_g[nbr] = cost2nbr
                     prevs_g[nbr] = cur
                     pq_g.enqueue(nbr, cost2nbr + heuristic * 0.999) # Multiple nodes possible!
 
             if screen:
-                self.board.draw(screen)
+                self.board.draw_player(screen)
+                self.board.draw_goal(screen)
+                screen.refresh()
 
         # Recreate path
         path = [cur]
@@ -342,7 +390,7 @@ class AStarBD(AStar):
 
 class GreedyBD(Greedy):
     def search(self, start, goal, screen = None):
-        '''Performs bidirectional search using A* algorithm
+        '''Performs bidirectional greedy search
         start: (x, y) tuple
         goal: (x, y) tuple
         '''
@@ -365,7 +413,9 @@ class GreedyBD(Greedy):
         while not pq_s.isEmpty() and not pq_g.isEmpty():
             cur = pq_s.dequeue()
             cur_x, cur_y = cur
+
             self.board[cur_y][cur_x] = 3 # Mark as "seen"
+            self.board.draw_cell(cur_x, cur_y, screen)
 
             nbrs = self.board.getNeighbours(cur)
             for nbr in nbrs:
@@ -375,13 +425,18 @@ class GreedyBD(Greedy):
                 if nbr not in costs_s or cost2nbr < costs_s[nbr]:
                     # Relax costs if cost is lower
                     self.board[nbr[1]][nbr[0]] = 4 # Mark as "frontier"
+                    self.board.draw_cell(nbr[0], nbr[1], screen)
+
+                    # Relax costs
                     costs_s[nbr] = cost2nbr
                     prevs_s[nbr] = cur
                     pq_s.enqueue(nbr,heuristic) # Multiple nodes possible!
 
             cur = pq_g.dequeue()
             cur_x, cur_y = cur
+
             self.board[cur_y][cur_x] = 3 # Mark as "seen"
+            self.board.draw_cell(cur_x, cur_y, screen)
 
             if cur in costs_s:
                 break
@@ -393,12 +448,17 @@ class GreedyBD(Greedy):
                 heuristic = self.getHeuristic(nbr, start, self.mode_h)
                 if nbr not in costs_g or cost2nbr < costs_g[nbr]: # Relax costs if cost is lower
                     self.board[nbr[1]][nbr[0]] = 4 # Mark as "frontier"
+                    self.board.draw_cell(nbr[0], nbr[1], screen)
+
+                    # Relax costs
                     costs_g[nbr] = cost2nbr
                     prevs_g[nbr] = cur
                     pq_g.enqueue(nbr, heuristic) # Multiple nodes possible!
 
             if screen:
-                self.board.draw(screen)
+                self.board.draw_player(screen)
+                self.board.draw_goal(screen)
+                screen.refresh()
 
         # Recreate path
         path = [cur]

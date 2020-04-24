@@ -3,19 +3,22 @@ from objects.Game import Game
 from objects.Board import Board
 from objects.Menu import Menu, Radio, Button
 
+windowTooSmall = False
 def main(stdscr):
+    global windowTooSmall
     h, w = stdscr.getmaxyx()
     H_LIM, W_LIM = 39, 120
     if h < H_LIM or w < W_LIM:
+        windowTooSmall = True
         curses.endwin()
-        print()
-        print('Window must be at least {} by {}!'.format(H_LIM, W_LIM))
-        print('Current size: {} by {}.'.format(w, h))
-        return
     else:
         board = Board(18, 22)
         game = Game(board, stdscr)
         game.start()
 
 curses.wrapper(main)
+
+#  Dialog after closing
+if windowTooSmall:
+    print('Window must be at least 39 by 120!')
 

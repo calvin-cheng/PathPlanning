@@ -1,8 +1,10 @@
 import curses
 import curses.panel
 
+
 class Menu:
     def __init__(self, x, y, width, height, items, stdscr):
+        '''Constructor'''
         self.screen = stdscr
         self.window = stdscr.subwin(height, width, y, x)
         self.panel = curses.panel.new_panel(self.window) 
@@ -11,14 +13,16 @@ class Menu:
 
         self.items = items
         self.pos = 0
-        while isinstance(self.items[self.pos], (Text, Spacer)):
+
+        # Select first selectable item (i.e. not text) on start
+        while self.pos < len(self.items) and isinstance(self.items[self.pos], (Text, Spacer)):
             self.pos += 1
 
     def display(self):
+        '''Draws self on screen'''
         self.panel.top()
         self.panel.show()
         self.window.clear()
-
         y = 0
         for idx, item in enumerate(self.items):
             selected = True if idx == self.pos else False
@@ -28,15 +32,22 @@ class Menu:
         self.window.refresh()
 
     def nav(self, n):
+        '''Up-down navigation'''
         if self.items[self.pos].focus(n):
-            self.pos += n
-            self.pos = self.pos % len(self.items)
-            while isinstance(self.items[self.pos], (Text, Spacer)):
-                self.nav(n)
+            # Send scout to check for next selectable item
+            i = self.pos + n
+            while (0 <= i < len(self.items) and 
+                   isinstance(self.items[i], (Text, Spacer))):
+                i += n
+
+            # Set self.pos to scout's position if valid
+            if 0 <= i < len(self.items):
+                self.pos = i
         else:
             self.items[self.pos].nav(n)
 
     def navX(self, n):
+        '''Left-right navigation'''
         try:
             self.items[self.pos].navX(n)
         except:
@@ -44,7 +55,11 @@ class Menu:
 
 
     def select(self):
+        '''Runs selected item'''
         self.items[self.pos].run()
+
+
+# RADIO ITEMS ========================
 
 class RadioGroup:
     def __init__(self, radios, width):
@@ -76,6 +91,7 @@ class RadioGroup:
             return False
 
 class RadioGroupSingle(RadioGroup):
+    '''Radio group that allows only single selection'''
     def __init__(self, radios, width):
         super().__init__(radios, width)
         self.state = 0
@@ -89,6 +105,7 @@ class RadioGroupSingle(RadioGroup):
             self.state = self.pos
 
 class RadioGroupMultiple(RadioGroup):
+    '''Radio group that allows multiple selections'''
     def run(self):
         self.radios[self.pos].run()
 
@@ -111,6 +128,9 @@ class Radio:
     def focus(self, n):
         '''Returns True if key up/down allowed to nav away from button'''
         return True
+
+
+# BUTTON ITEMS ========================
 
 class Button:
     def __init__(self, text, fun, width, height):
@@ -167,6 +187,8 @@ class ButtonGroup:
         '''Returns True if key up/down allowed to nav away from button'''
         return True
 
+
+# TEXT ITEMS ========================
 
 class Text:
     def __init__(self, text, width):

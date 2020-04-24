@@ -16,7 +16,7 @@ class Game:
         self.menu = 0
 
         self.initialise_curses()
-        self.draw_board()
+        self.board.draw(self.screen)
         self.menus[self.menu].display()
 
         self.player = True
@@ -33,7 +33,7 @@ class Game:
                         [
                          Title('PATHFINDING', 20),
                          Spacer(1),
-                         Heading('Algorithms', 20),
+                         Heading('Algorithm', 20),
                          RadioGroupSingle([
                                            Radio('Dijkstra'),
                                            Radio('A Star'),
@@ -114,8 +114,6 @@ class Game:
                     self.menus[self.menu].navX(-1)
                 elif key == ord(' '):
                     self.menus[self.menu].select()
-                elif key == ord('p'):
-                    self.switch_planner()
             else: 
                 # Map-edit
                 # TODO: Fix below
@@ -130,62 +128,32 @@ class Game:
                     self.board.moveNode(self.players[self.player], 'L')
                 elif key == ord(' '):
                     self.switch_mode()
-                elif key == ord('t'):
-                    self.switch_player()
-            self.draw_board()
+            self.board.draw(self.screen)
             self.menus[self.menu].display()
-
-    def draw_board(self):
-        '''Draws board and player on curses screen object'''
-        h, w = self.screen.getmaxyx()
-
-        # Draw walls
-        # Double horizontal spacing for better aspect ratio
-        for i in range(self.board.w):
-            for j in range(self.board.l):
-                if self.board[j][i] == 0: # Gap
-                    string = '  '
-                    attr = curses.color_pair(1)
-                elif self.board[j][i] == 1: # Wall
-                    string = '  '
-                    attr = curses.color_pair(1) | curses.A_BOLD | curses.A_STANDOUT
-                elif self.board[j][i] == 2: # Path
-                    string = u'\u2805'*2
-                    attr = curses.color_pair(4) | curses.A_BOLD
-                elif self.board[j][i] == 3: # Visited
-                    string = u'\u2805'*2
-                    attr = curses.color_pair(5)# | curses.A_BOLD
-                elif self.board[j][i] == 4: # Fronter
-                    string = u'\u2805'*2
-                    attr = curses.color_pair(6)# | curses.A_STANDOUT
-
-                self.screen.addstr(1 + j, 2 + i * 2, string, attr)
-
-        # Draw player
-        self.screen.addstr(1 + self.board.player[1],
-                           2 + self.board.player[0]*2,
-                           '  ', curses.color_pair(2))
-        # Draw goal
-        self.screen.addstr(1 + self.board.goal[1],
-                           2 + self.board.goal[0]*2,
-                           u'\U0001F907\U0001F907', curses.color_pair(3) | curses.A_BOLD)
-        self.screen.refresh()
 
     def search(self):
         self.board.clearPath()
+        self.board.draw(self.screen)
+
         mode_c = self.menus[0].items[5].state
         mode_h = self.menus[0].items[7].state
         planner = self.menus[0].items[3].state
         bd = self.menus[0].items[9].radios[0].state
-        d = self.planners[planner][bd](self.board, mode_c, mode_h)
-        path = d.search(self.board.player, self.board.goal, self.screen)
+
+        pathfinder = self.planners[planner][bd](self.board, mode_c, mode_h)
+        path = pathfinder.search(self.board.player, self.board.goal, self.screen)
         for node in path:
             i, j = node
-            time.sleep(0.04)
+
             self.board[j][i] = 2
-            self.draw_board()
-#            self.screen.refresh()
-            curses.flushinp() # Clears key inputs from queue
+            self.board.draw_cell(i, j, self.screen)
+            self.board.draw_player(self.screen)
+            self.board.draw_goal(self.screen)
+            self.screen.refresh()
+
+            time.sleep(0.03)
+
+        curses.flushinp() # Clears key inputs from queue
 
     def switch_player(self):
         self.player = not(self.player)

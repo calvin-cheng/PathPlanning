@@ -56,16 +56,44 @@ class Board:
 
                 screen.addstr(1 + j, 2 + i * 2, string, attr)
 
-        # Draw player
+        self.draw_player(screen)
+        self.draw_goal(screen)
+
+    def draw_cell(self, i, j, screen):
+        if self.board[j][i] == 0: # Gap
+            string = '  '
+            attr = curses.color_pair(1)
+        elif self.board[j][i] == 1: # Wall
+            string = '  '
+            attr = curses.color_pair(1) | curses.A_BOLD | curses.A_STANDOUT
+        elif self.board[j][i] == 2: # Path
+            string = u'\u2805\u2805'
+            attr = curses.color_pair(4) | curses.A_BOLD
+        elif self.board[j][i] == 3: # Visited
+            string = u'\u2805'*2 
+            attr = curses.color_pair(5)# | curses.A_BOLD
+        elif self.board[j][i] == 4: # Frontier
+            string = u'\u2805'*2 
+            attr = curses.color_pair(6)# | curses.A_STANDOUT
+
+        screen.addstr(1 + j, 2 + i * 2, string, attr)
+
+    def draw_player(self, screen):
         screen.addstr(1 + self.player[1],
                       2 + self.player[0]*2,
                       '  ', curses.color_pair(2))
-        # Draw goal
+
+    def draw_goal(self, screen):
         screen.addstr(1 + self.goal[1],
                       2 + self.goal[0]*2,
                       u'\U0001F907\U0001F907', curses.color_pair(3) | curses.A_BOLD)
-        screen.refresh()
 
+    def clearPath(self):
+        '''Removes path nodes from board'''
+        for i in range(self.w):
+            for j in range(self.l):
+                if self.board[j][i] != 1:
+                    self.board[j][i] = 0
 
     def generate(self):
         '''Generates an empty board with border walls'''
@@ -78,7 +106,6 @@ class Board:
             if j == self.l//2:
                 continue
             self.board[j][i] = 1
-
 
     def mazify(self):
         '''Generates random maze using DFS and moves player to start'''
@@ -108,13 +135,6 @@ class Board:
                     for y in range(min(Y, Y+dY), max(Y, Y+dY)+1):
                         self.board[y][x] = 0
                 self.carve(X+dX, Y+dY)
-
-    def clearPath(self):
-        '''Removes path nodes from board'''
-        for i in range(self.w):
-            for j in range(self.l):
-                if self.board[j][i] != 1:
-                    self.board[j][i] = 0
 
     def inBoard(self, x, y):
         '''Helper function that returns TRUE if (x, y) is valid.'''
