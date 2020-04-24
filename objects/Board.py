@@ -86,7 +86,7 @@ class Board:
     def draw_goal(self, screen):
         screen.addstr(1 + self.goal[1],
                       2 + self.goal[0]*2,
-                      u'\U0001F907\U0001F907', curses.color_pair(3) | curses.A_BOLD)
+                      '  ', curses.color_pair(3) | curses.A_BOLD)
 
     def clearPath(self):
         '''Removes path nodes from board'''

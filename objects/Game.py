@@ -68,6 +68,8 @@ class Game:
                         self.screen)
         menu_edit = Menu(94, 1, 24, 37,
                          [
+                          Title('Board Edit', 20),
+                          Spacer(1),
                           Button('Move Start', self.move_player, 20, 3),
                           Button('Move Goal', self.move_goal, 20, 3),
                           Button('Mazify', self.mazify, 20, 3),
@@ -75,7 +77,17 @@ class Game:
                           Button('Done', self.switch_menu, 20, 3)
                          ],
                          self.screen)
-        menus = [menu_sim, menu_edit]
+        menu_move = Menu(94, 1, 24, 37,
+                         [
+                          Spacer(12),
+                          Heading('Controls', 20),
+                          Spacer(1),
+                          Text('ARROW KEYS: Move', 20),
+                          Text('SPACE: Return', 20),
+                         ],
+                         self.screen)
+                          
+        menus = [menu_sim, menu_edit, menu_move]
         self.menus = menus
 
     def move_player(self):
@@ -177,6 +189,11 @@ class Game:
         self.menus[self.menu].show()
 
     def switch_mode(self):
+        if self.menu == 2:
+            self.menu = 1
+        else:
+            self.menu = 2
+        self.menus[self.menu].show()
         self.mode = not(self.mode)
 
     def mazify(self):

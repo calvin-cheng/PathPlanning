@@ -1,5 +1,6 @@
 import curses
 import curses.panel
+import math
 
 
 class Menu:
@@ -20,8 +21,8 @@ class Menu:
 
     def show(self):
         self.panel.top()
-        self.panel.show()
         self.window.clear()
+        self.panel.show()
 
     def display(self):
         '''Draws self on screen'''
@@ -196,7 +197,15 @@ class Text:
     def __init__(self, text, width):
         self.text = text
         self.width = width
-        self.height = 1
+        self.height = math.ceil(len(text) / width)
+
+    def display(self, x, y, width, height, selected, screen):
+        dy = 0
+        start = 0
+        while start < len(self.text):
+            screen.addstr(y + dy, x, self.text[start:start + width])
+            start += width
+            dy += 1
 
     def focus(self, n):
         return True
