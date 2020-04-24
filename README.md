@@ -1,7 +1,6 @@
 <img src="images/screen.png" style="zoom:20%;" />
 
 
-
 # Path Planning
 
 A project created to experiment and visualise maze-generation and path-planning
