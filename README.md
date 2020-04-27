@@ -1,10 +1,10 @@
 <img src="images/screen.png" style="zoom:3%;"/>
 
 
-# Path Planning
+# Pathfinding Visualiser
 
-A project created to experiment and visualise maze-generation and path-planning
-algorithms all within the terminal using the `curses` module. Powered by Python.
+A project created to experiment and visualise maze generation and pathfinding
+algorithms within the terminal using the `curses` module. Powered by Python.
 
 ## Getting Started
 
@@ -12,6 +12,7 @@ Within a terminal, simply `cd` into the primary directory and run `main.py` via
 ```
 python3 main.py
 ```
+As curses is included in the standard library, it should run on vanilla Python3. 
 
 ## Built with
 
