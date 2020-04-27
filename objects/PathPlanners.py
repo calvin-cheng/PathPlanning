@@ -1,6 +1,7 @@
 from objects.LinearADT import PriorityQueue, PriorityQueue2
 import curses
 import math
+import time
 
 
 class Dijkstra:
@@ -54,6 +55,7 @@ class Dijkstra:
                 self.board.draw_player(screen)
                 self.board.draw_goal(screen)
                 screen.refresh()
+                time.sleep(0.001) # Slow down animation
 
         # Recreate path
         path = [goal]
@@ -126,11 +128,12 @@ class AStar(Dijkstra):
                     # Relax costs
                     scores[nbr] = score2nbr
                     prevs[nbr] = cur
-                    pq.enqueue(nbr, score2nbr + heuristic * 0.999) # Multiple nodes possible!
+                    pq.enqueue(nbr, score2nbr + heuristic) # Multiple nodes possible!
             if screen:
                 self.board.draw_player(screen)
                 self.board.draw_goal(screen)
                 screen.refresh()
+                time.sleep(0.001) # Slow down animation
 
         # Recreate path
         path = [goal]
@@ -210,6 +213,7 @@ class Greedy(AStar):
                 self.board.draw_player(screen)
                 self.board.draw_goal(screen)
                 screen.refresh()
+                time.sleep(0.001) # Slow down animation
 
         # Recreate path
         path = [goal]
@@ -298,6 +302,7 @@ class DijkstraBD(Dijkstra):
                 self.board.draw_player(screen)
                 self.board.draw_goal(screen)
                 screen.refresh()
+                time.sleep(0.001) # Slow down animation
 
         # Recreate path
         path = [cur]
@@ -362,7 +367,7 @@ class AStarBD(AStar):
                     # Relax costs if cost is lower
                     costs_s[nbr] = cost2nbr
                     prevs_s[nbr] = cur
-                    pq_s.enqueue(nbr, cost2nbr + heuristic * 0.999) # Multiple nodes possible!
+                    pq_s.enqueue(nbr, cost2nbr + heuristic) # Multiple nodes possible!
 
             cur = pq_g.dequeue()
             cur_x, cur_y = cur
@@ -393,6 +398,7 @@ class AStarBD(AStar):
                 self.board.draw_player(screen)
                 self.board.draw_goal(screen)
                 screen.refresh()
+                time.sleep(0.001) # Slow down animation
 
         # Recreate path
         path = [cur]
@@ -486,6 +492,7 @@ class GreedyBD(Greedy):
                 self.board.draw_player(screen)
                 self.board.draw_goal(screen)
                 screen.refresh()
+                time.sleep(0.001) # Slow down animation
 
         # Recreate path
         path = [cur]

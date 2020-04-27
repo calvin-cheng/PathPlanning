@@ -3,8 +3,7 @@
 
 # Pathfinding Visualiser
 
-A project created to experiment and visualise maze generation and pathfinding
-algorithms within the terminal using the `curses` module. Powered by Python.
+A project created to experiment and visualise maze generation and pathfinding algorithms within the terminal using the `curses` module. Powered by Python.
 
 ## Getting Started
 
