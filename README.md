@@ -21,8 +21,9 @@ As curses is included in the standard library, it should run on vanilla Python3.
 
 * ~~Add mouse usage (dragging nodes, adding walls, etc)~~
   * Feature dropped – inconsistent support across various terminals
-* Implement other searches (BFS, DFS, ~~Greedy~~, ~~Bidirectional~~, NBA*, etc)
-* ~~Prettier visualisation~~ (Added 19/04/20)
-* Better board-editing functionalities
+* ~~Prettier visualisation~~ 
+* ~~Better board-editing functionalities~~
 * Various bug-fixes (inconsistent turn costs, ~~screen flicker~~)
+* Implement other searches (BFS, DFS, ~~Greedy~~, ~~Bidirectional~~, NBA*, etc)
+* Refactor code
 

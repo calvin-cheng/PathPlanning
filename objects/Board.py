@@ -59,7 +59,6 @@ class Board:
 
         self.draw_start(screen)
         self.draw_goal(screen)
-        self.draw_cursor(screen)
 
     def draw_cell(self, i, j, screen):
         if self.board[j][i] == 0: # Gap
@@ -103,7 +102,7 @@ class Board:
 
         screen.addstr(1 + self.cursor[1],
                       2 + self.cursor[0]*2,
-                      '><', attr | curses.A_BLINK)
+                      u'\u283f\u283f', attr)
 
     def clearPath(self):
         '''Removes path nodes from board'''
@@ -118,81 +117,55 @@ class Board:
         for i in range(1, self.w-1):
             for j in range(1, self.l-1):
                 self.board[j][i] = 0
-        i = self.w//2
-        for j in range(1, self.l-1):
-            if j == self.l//2:
-                continue
-            self.board[j][i] = 1
 
     def mazify(self):
         '''Generates random maze using DFS and moves player to start'''
         self.board = [[1 for _ in range(self.w)] for _ in range(self.l)]
-        X, Y = random.randrange(1,self.w - 1,2), random.randrange(1,self.l - 1,2)
-        self.board[Y][X] = 0
-        self.carve(X,Y)
+        x, y = random.randrange(1,self.w - 1,2), random.randrange(1,self.l - 1,2)
+        self.board[y][x] = 0
+        self.carve(x, y)
 
-        # Move player and goal if they're in a wall
-        if self.board[self.start[1]][self.start[0]] == 1:
-            nbrs = self.getNeighbours(self.start)
-            self.start = nbrs[0]
+        # Delete walls directly above start and goal
+        start_x, start_y = self.start
+        goal_x, goal_y = self.goal
+        self.board[start_y][start_x] = 0
+        self.board[goal_y][goal_x] = 0
 
-        if self.board[self.goal[1]][self.goal[0]] == 1:
-            nbrs = self.getNeighbours(self.goal)
-            self.goal = nbrs[0]
-
-    def carve(self, X, Y):
+    def carve(self, x, y):
         '''Helper recursive function for DFS maze generation.
-        "Carves" a tunnel from position (X, Y).
+        "Carves" a tunnel from position (x, y).
         '''
-        DIRS = [[0, -2], [2, 0], [0, 2], [-2, 0]] # N, E, S, W
+        DIRS = [(0, -2), (2, 0), (0, 2), (-2, 0)] # N, E, S, W
         random.shuffle(DIRS)
-        for dX, dY in DIRS:
-            if self.inBoard(X+dX,Y+dY) and self.board[Y+dY][X+dX] == 1:
-                for x in range(min(X, X+dX), max(X, X+dX)+1):
-                    for y in range(min(Y, Y+dY), max(Y, Y+dY)+1):
-                        self.board[y][x] = 0
-                self.carve(X+dX, Y+dY)
+        for dx, dy in DIRS:
+            if self.inBoard(x+dx,y+dy) and self.board[y+dy][x+dx] == 1:
+                # Open wall between (x, y) and (x+dx, y+dy)
+                for i in range(min(y, y+dy), max(x, x+dx)+1):
+                    for j in range(min(y, y+dy), max(y, y+dy)+1):
+                        self.board[j][i] = 0
+                self.carve(x+dx, y+dy)
 
     def inBoard(self, x, y):
         '''Helper function that returns TRUE if (x, y) is valid.'''
-        if (x >= 0 and x < self.w) and (y >= 0 and y < self.l):
-            result = True
-        else:
-            result = False
-        return result
+        return (0 <= x < self.w) and (0 <= y < self.l)
 
     def getNeighbours(self, node):
-        '''Gets neighbours of node
+        '''Gets neighbouring free nodes within the board
         node: (x, y) tuple
         '''
         x, y = node
         dirs = [(0, 1), (1, 0), (0, -1), (-1, 0)]
-        neighbours = []
+        nbrs = []
         for dx, dy in dirs:
             if self.inBoard(x+dx, y+dy) and self.board[y+dy][x+dx] != 1:
-                neighbours.append((x+dx, y+dy))
-        return neighbours
+                nbrs.append((x+dx, y+dy))
+        return nbrs
 
     def __getitem__(self, i):
         return self.board[i]
 
     def __len__(self):
         return len(self.board)
-
-    def moveNode(self, node, direction):
-        '''Moves node in specified direction.'''
-        dirs = {'U': [-1, 0], 'D': [1, 0], 'L': [0, -1], 'R': [0, 1]}
-        dy, dx = dirs[direction]
-        x, y = node
-        if self.inBoard(x+dx, y+dy) and self.board[y+dy][x+dx] != 1:
-            self.board[y][x], self.board[y+dy][x+dx] = self.board[y+dy][x+dx], self.board[y][x]
-
-    def moveStart(self, direction):
-        dirs = {'U': [-1, 0], 'D': [1, 0], 'L': [0, -1], 'R': [0, 1]}
-        dy, dx = dirs[direction]
-        x, y = self.start
-        if self.inBoard(x+dx, y+dy) and self.board[y+dy][x+dx] != 1:
-            self.start = (x+dx, y+dy)
 
     def placeStart(self, pos):
         '''Places start at pos = (x, y)'''
@@ -201,12 +174,13 @@ class Board:
             self.start = (new_x, new_y)
             self.board[new_y][new_x] = 0
 
-    def moveGoal(self, direction):
+    def moveStart(self, direction):
+        '''Moves start node'''
         dirs = {'U': [-1, 0], 'D': [1, 0], 'L': [0, -1], 'R': [0, 1]}
         dy, dx = dirs[direction]
-        x, y = self.goal
-        if self.inBoard(x+dx, y+dy) and self.board[y+dy][x+dx] != 1:
-            self.goal = (x+dx, y+dy)
+        x, y = self.start
+        if self.board[y+dy][x+dx] != 1:
+            self.placeStart((x+dx, y+dy))
 
     def placeGoal(self, pos):
         '''Places goal at pos = (x, y)'''
@@ -215,12 +189,18 @@ class Board:
             self.goal = (new_x, new_y)
             self.board[new_y][new_x] = 0
 
+    def moveGoal(self, direction):
+        '''Moves goal node'''
+        dirs = {'U': [-1, 0], 'D': [1, 0], 'L': [0, -1], 'R': [0, 1]}
+        dy, dx = dirs[direction]
+        x, y = self.goal
+        if self.board[y+dy][x+dx] != 1:
+            self.placeGoal((x+dx, y+dy))
+
     def moveCursor(self, direction):
+        '''Moves cursor'''
         dirs = {'U': [-1, 0], 'D': [1, 0], 'L': [0, -1], 'R': [0, 1]}
         dy, dx = dirs[direction]
         x, y = self.cursor
         if self.inBoard(x+dx, y+dy):
             self.cursor = (x+dx, y+dy)
-
-    def checkWin(self):
-        return self.start == self.goal

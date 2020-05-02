@@ -4,10 +4,10 @@ from objects.PathPlanners import Dijkstra, AStar, Greedy, DijkstraBD, AStarBD, G
 from objects.Board import Board
 from objects.Menu import *
 
-
 class Game:
     def __init__(self, board, screen):
-        self.mode = 0 # 0 - Simulation, 1 - Board Edit
+        '''Initialisation'''
+        self.mode = 0 # 0 - Simulation, 1 - Board Edit, 2 – Cursor Edit
 
         self.board = board
         self.screen = screen
@@ -26,14 +26,14 @@ class Game:
         self.planners = {0: [Dijkstra, DijkstraBD], 
                          1: [AStar, AStarBD], 
                          2: [Greedy, GreedyBD]}
-        self.cursorMode = 0
+        self.cursor_mode = 0
 
         self.searchActive = False
         self.isRunning = True
 
 
     def generate_menus(self):
-
+        '''Generates game menus'''
         menu_sim = Menu(94, 1, 24, 37,
                         [
                          Title('PATHFINDING', 20),
@@ -70,6 +70,7 @@ class Game:
                                      ], 20)
                         ],
                         self.screen)
+
         menu_edit = Menu(94, 1, 24, 37,
                          [
                           Title('Board Edit', 20),
@@ -82,12 +83,13 @@ class Game:
                           Spacer(1),
                           Heading('Advanced', 20),
                           Spacer(1),
-                          Button('Add/Remove Walls', lambda: self.set_player(2), 20, 3),
+                          Button('Use Cursor', lambda: self.set_player(2), 20, 3),
                           Button('Mazify', self.mazify, 20, 3),
                           Spacer(10),
                           Button('Done', lambda: self.switch_menu(0), 20, 3)
                          ],
                          self.screen)
+
         menu_startgoal = Menu(94, 1, 24, 37,
                               [
                                Spacer(12),
@@ -97,16 +99,25 @@ class Game:
                                Text('Q: Finish', 20),
                               ],
                               self.screen)
+
         menu_cursor = Menu(94, 1, 24, 37,
                               [
-                               Spacer(12),
-                               Heading('Controls', 20),
+                               Title('Controls', 20),
+                               Spacer(2),
+                               Heading('Movement', 20),
                                Spacer(1),
                                Text('ARROW KEYS: Move', 20),
+                               Spacer(2),
+                               Heading('Actions', 20),
+                               Spacer(1),
+                               Text('SPACE: Add Walls', 20),
+                               Spacer(1),
                                Text('1: Place Start', 20),
                                Text('2: Place Goal', 20),
-                               Text('SPACE: Add Walls', 20),
-                               Text('Q: Finish', 20),
+                               Spacer(2),
+                               Heading('Other', 20),
+                               Spacer(1),
+                               Text('Q: Quit', 20),
                               ],
                               self.screen)
                           
@@ -129,6 +140,7 @@ class Game:
         curses.init_pair(6, curses.COLOR_CYAN, -1) # Frontier
 
     def start(self):
+        '''Main loop'''
         while self.isRunning:
             key = self.screen.getch()
             if self.mode == 0: 
@@ -144,10 +156,8 @@ class Game:
                 elif key == ord(' '):
                     self.menus[self.menu].select()
 
-            elif self.mode == 1: 
-                # Map-edit
-                # Update player or goal position
-                self.players = {0: self.board.start, 1: self.board.goal, 2: self.board.cursor}
+            else: # self.mode == 1 or self.mode == 2
+                # Start/Goal edit
                 if key == curses.KEY_UP:
                     self.move_player('U')
                 elif key == curses.KEY_DOWN:
@@ -157,39 +167,35 @@ class Game:
                 elif key == curses.KEY_LEFT:
                     self.move_player('L')
                 elif key == ord('q'):
+                    self.switch_cursor_mode(0)
                     self.switch_mode(0)
                     self.switch_menu(1)
 
-                if self.searchActive:
-                    self.search(False)
-
-            elif self.mode == 2:
-                # Cursor
-                if key == curses.KEY_UP:
-                    self.move_player('U')
-                elif key == curses.KEY_DOWN:
-                    self.move_player('D')
-                elif key == curses.KEY_RIGHT:
-                    self.move_player('R')
-                elif key == curses.KEY_LEFT:
-                    self.move_player('L')
-                elif key == ord('q'):
-                    self.switch_mode(0)
-                    self.switch_menu(1)
-                elif key == ord('1'):
-                    self.board.placePlayer(self.board.cursor)
-                elif key == ord('2'):
-                    self.board.placeGoal(self.board.cursor)
-                elif key == ord(' '):
-                    self.switch_cursor_mode()
+                if self.mode == 2:
+                    if key == ord('1'):
+                        self.board.placeStart(self.board.cursor)
+                    elif key == ord('2'):
+                        self.board.placeGoal(self.board.cursor)
+                    elif key == ord(' '):
+                        x, y = self.board.cursor
+                        if self.cursor_mode != 0:
+                            self.switch_cursor_mode(0)
+                        else:
+                            if self.board[y][x] == 1:
+                                self.switch_cursor_mode(2)
+                            else:
+                                self.switch_cursor_mode(1)
 
                 if self.searchActive:
                     self.search(False)
 
             self.board.draw(self.screen)
+            if self.mode == 2:
+                self.board.draw_cursor(self.screen)
             self.menus[self.menu].display()
 
     def search(self, animate = True):
+        '''Searches for path from start to goal using selected pathfinder'''
         self.board.clearPath()
         self.board.draw(self.screen)
 
@@ -222,14 +228,16 @@ class Game:
         self.searchActive = True
 
     def set_player(self, n):
+        '''Sets player (start, goal or cursor)'''
         self.player = n
+
+        # Toggle respective menu and mode
         if self.player == 0 or self.player == 1:
             self.switch_mode(1)
             self.switch_menu(2)
         elif self.player == 2:
             self.switch_mode(2)
             self.switch_menu(3)
-
 
     def move_player(self, direction):
         ''' Moves "player" (ie. start, goal, cursor) '''
@@ -240,26 +248,36 @@ class Game:
         else:
             self.board.moveCursor(direction)
             x, y = self.board.cursor
-            if self.cursorMode == 1: # Adding walls
-                self.board[y][x] = 1
-            elif self.cursorMode == 2: # Removing walls
+            if self.cursor_mode == 0:
+                if self.board[y][x] == 1:
+                    self.menus[3].items[8].text = 'SPACE: Remove Walls'
+                else:
+                    self.menus[3].items[8].text = 'SPACE: Add Walls   '
+
+            if self.cursor_mode == 1: # Adding walls
+                self.board[y][x] = 1 
+            elif self.cursor_mode == 2: # Removing walls
                 self.board[y][x] = 0
 
-    def switch_cursor_mode(self):
+    def switch_cursor_mode(self, n):
         '''Switches cursor mode
-        0 - Neutral, 1 - Adds walls, 2 - Removes walls
+        n: 0 - Neutral, 1 - Adds walls, 2 - Removes walls
         '''
-        if self.cursorMode != 0:
-            self.cursorMode = 0
-
-        else:
-            x, y = self.board.cursor
+        self.cursor_mode = n
+        x, y = self.board.cursor
+        if self.cursor_mode == 0:
             if self.board[y][x] == 1:
-                self.board[y][x] = 0
-                self.cursorMode = 2
+                self.menus[3].items[8].text = 'SPACE: Remove Walls'
             else:
-                self.board[y][x] = 1
-                self.cursorMode = 1
+                self.menus[3].items[8].text = 'SPACE: Add Walls   '
+        elif self.cursor_mode == 1:
+            self.board[y][x] = 1
+            self.cursor_mode = 1
+            self.menus[3].items[8].text = 'SPACE: Stop        '
+        elif self.cursor_mode == 2:
+            self.board[y][x] = 0
+            self.cursor_mode = 2
+            self.menus[3].items[8].text = 'SPACE: Stop        '      
 
     def switch_menu(self, n):
         '''Switches menu'''
