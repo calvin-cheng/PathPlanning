@@ -24,6 +24,7 @@ class Dijkstra:
         pq = PriorityQueue2()
         pq.enqueue(start, costs[start])
 
+        foundPath = False
         while not pq.isEmpty():
             cur = pq.dequeue()
             cur_x, cur_y = cur
@@ -31,9 +32,10 @@ class Dijkstra:
             self.board[cur_y][cur_x] = 3 # Mark as "seen"
             if screen:
                 self.board.draw_cell(cur_x, cur_y, screen)
-                self.board.draw_player(screen)
+                self.board.draw_start(screen)
 
             if cur == goal:
+                foundPath = True
                 break
 
             nbrs = self.board.getNeighbours(cur)
@@ -52,19 +54,22 @@ class Dijkstra:
                     prevs[nbr] = cur
                     pq.enqueue(nbr, cost2nbr) # Multiple nodes possible!
             if screen:
-                self.board.draw_player(screen)
+                self.board.draw_start(screen)
                 self.board.draw_goal(screen)
                 screen.refresh()
                 time.sleep(0.001) # Slow down animation
 
         # Recreate path
-        path = [goal]
-        i, j = goal
-        while prevs[(i, j)]:
-            prev = prevs[(i, j)]
-            path.append(prev)
-            i, j = prev
-        return reversed(path)
+        path = []
+        if foundPath:
+            path = [goal]
+            i, j = goal
+            while prevs[(i, j)]:
+                prev = prevs[(i, j)]
+                path.append(prev)
+                i, j = prev
+            return reversed(path)
+        return path
 
     def getCost(self, node1, node2, mode = 0):
         '''Finds distance between node1 and node2
@@ -101,6 +106,7 @@ class AStar(Dijkstra):
         pq = PriorityQueue2()
         pq.enqueue(start, scores[start])
 
+        foundPath = False
         while not pq.isEmpty():
             cur = pq.dequeue()
             cur_x, cur_y = cur
@@ -109,9 +115,10 @@ class AStar(Dijkstra):
             self.board[cur_y][cur_x] = 3
             if screen:
                 self.board.draw_cell(cur_x, cur_y, screen)
-                self.board.draw_player(screen)
+                self.board.draw_start(screen)
 
             if cur == goal: 
+                foundPath = True
                 break 
 
             nbrs = self.board.getNeighbours(cur)
@@ -130,19 +137,22 @@ class AStar(Dijkstra):
                     prevs[nbr] = cur
                     pq.enqueue(nbr, score2nbr + heuristic) # Multiple nodes possible!
             if screen:
-                self.board.draw_player(screen)
+                self.board.draw_start(screen)
                 self.board.draw_goal(screen)
                 screen.refresh()
                 time.sleep(0.001) # Slow down animation
 
         # Recreate path
-        path = [goal]
-        i, j = goal
-        while prevs[(i, j)]:
-            prev = prevs[(i, j)]
-            path.append(prev)
-            i, j = prev
-        return reversed(path)
+        path = []
+        if foundPath:
+            path = [goal]
+            i, j = goal
+            while prevs[(i, j)]:
+                prev = prevs[(i, j)]
+                path.append(prev)
+                i, j = prev
+            return reversed(path)
+        return path
 
     def getHeuristic(self, node1, node2, mode = 0):
         '''Finds manhattan distance between node1 and node2
@@ -183,6 +193,7 @@ class Greedy(AStar):
         pq = PriorityQueue2()
         pq.enqueue(start, scores[start])
 
+        foundPath = False
         while not pq.isEmpty():
             cur = pq.dequeue()
             cur_x, cur_y = cur
@@ -192,6 +203,7 @@ class Greedy(AStar):
                 self.board.draw_cell(cur_x, cur_y, screen)
 
             if cur == goal:
+                foundPath = True
                 break
 
             nbrs = self.board.getNeighbours(cur)
@@ -210,19 +222,22 @@ class Greedy(AStar):
                     prevs[nbr] = cur
                     pq.enqueue(nbr, heuristic) # Multiple nodes possible!
             if screen:
-                self.board.draw_player(screen)
+                self.board.draw_start(screen)
                 self.board.draw_goal(screen)
                 screen.refresh()
                 time.sleep(0.001) # Slow down animation
 
         # Recreate path
-        path = [goal]
-        i, j = goal
-        while prevs[(i, j)]:
-            prev = prevs[(i, j)]
-            path.append(prev)
-            i, j = prev
-        return reversed(path)
+        path = []
+        if foundPath:
+            path = [goal]
+            i, j = goal
+            while prevs[(i, j)]:
+                prev = prevs[(i, j)]
+                path.append(prev)
+                i, j = prev
+            return reversed(path)
+        return path
 
 
 class DijkstraBD(Dijkstra):
@@ -248,6 +263,7 @@ class DijkstraBD(Dijkstra):
         pq_g = PriorityQueue2()
         pq_g.enqueue(goal, costs_g[goal])
 
+        foundPath = False
         while not pq_s.isEmpty() and not pq_g.isEmpty():
             cur = pq_s.dequeue()
             cur_x, cur_y = cur
@@ -281,6 +297,7 @@ class DijkstraBD(Dijkstra):
                 self.board.draw_cell(cur_x, cur_y, screen)
 
             if cur in costs_s:
+                foundPath = True
                 break
 
             nbrs = self.board.getNeighbours(cur)
@@ -299,25 +316,28 @@ class DijkstraBD(Dijkstra):
                     pq_g.enqueue(nbr, cost2nbr) # Multiple nodes possible!
 
             if screen:
-                self.board.draw_player(screen)
+                self.board.draw_start(screen)
                 self.board.draw_goal(screen)
                 screen.refresh()
                 time.sleep(0.001) # Slow down animation
 
         # Recreate path
-        path = [cur]
-        i, j = cur
-        while prevs_s[(i, j)]:
-            prev = prevs_s[(i, j)]
-            path.append(prev)
-            i, j = prev
-        path = list(reversed(path))
+        path = []
+        if foundPath:
+            path = [cur]
+            i, j = cur
+            while prevs_s[(i, j)]:
+                prev = prevs_s[(i, j)]
+                path.append(prev)
+                i, j = prev
+            path = list(reversed(path))
 
-        i, j = cur
-        while prevs_g[(i, j)]:
-            prev = prevs_g[(i, j)]
-            path.append(prev)
-            i, j = prev
+            i, j = cur
+            while prevs_g[(i, j)]:
+                prev = prevs_g[(i, j)]
+                path.append(prev)
+                i, j = prev
+            return path
         return path
 
 class AStarBD(AStar):
@@ -344,6 +364,7 @@ class AStarBD(AStar):
         pq_g = PriorityQueue2()
         pq_g.enqueue(goal, costs_g[goal])
 
+        foundPath = False
         while not pq_s.isEmpty() and not pq_g.isEmpty():
             cur = pq_s.dequeue()
             cur_x, cur_y = cur
@@ -377,6 +398,7 @@ class AStarBD(AStar):
                 self.board.draw_cell(cur_x, cur_y, screen)
 
             if cur in costs_s:
+                foundPath = True
                 break
 
             nbrs = self.board.getNeighbours(cur)
@@ -395,25 +417,28 @@ class AStarBD(AStar):
                     pq_g.enqueue(nbr, cost2nbr + heuristic * 0.999) # Multiple nodes possible!
 
             if screen:
-                self.board.draw_player(screen)
+                self.board.draw_start(screen)
                 self.board.draw_goal(screen)
                 screen.refresh()
                 time.sleep(0.001) # Slow down animation
 
         # Recreate path
-        path = [cur]
-        i, j = cur
-        while prevs_s[(i, j)]:
-            prev = prevs_s[(i, j)]
-            path.append(prev)
-            i, j = prev
-        path = list(reversed(path))
+        path = []
+        if foundPath:
+            path = [cur]
+            i, j = cur
+            while prevs_s[(i, j)]:
+                prev = prevs_s[(i, j)]
+                path.append(prev)
+                i, j = prev
+            path = list(reversed(path))
 
-        i, j = cur
-        while prevs_g[(i, j)]:
-            prev = prevs_g[(i, j)]
-            path.append(prev)
-            i, j = prev
+            i, j = cur
+            while prevs_g[(i, j)]:
+                prev = prevs_g[(i, j)]
+                path.append(prev)
+                i, j = prev
+            return path
         return path
 
 
@@ -439,6 +464,7 @@ class GreedyBD(Greedy):
         pq_g = PriorityQueue2()
         pq_g.enqueue(goal, costs_g[goal])
 
+        foundPath = False
         while not pq_s.isEmpty() and not pq_g.isEmpty():
             cur = pq_s.dequeue()
             cur_x, cur_y = cur
@@ -471,6 +497,7 @@ class GreedyBD(Greedy):
                 self.board.draw_cell(cur_x, cur_y, screen)
 
             if cur in costs_s:
+                foundPath = True
                 break
 
             nbrs = self.board.getNeighbours(cur)
@@ -489,23 +516,26 @@ class GreedyBD(Greedy):
                     pq_g.enqueue(nbr, heuristic) # Multiple nodes possible!
 
             if screen:
-                self.board.draw_player(screen)
+                self.board.draw_start(screen)
                 self.board.draw_goal(screen)
                 screen.refresh()
                 time.sleep(0.001) # Slow down animation
 
         # Recreate path
-        path = [cur]
-        i, j = cur
-        while prevs_s[(i, j)]:
-            prev = prevs_s[(i, j)]
-            path.append(prev)
-            i, j = prev
-        path = list(reversed(path))
+        path = []
+        if foundPath:
+            path = [cur]
+            i, j = cur
+            while prevs_s[(i, j)]:
+                prev = prevs_s[(i, j)]
+                path.append(prev)
+                i, j = prev
+            path = list(reversed(path))
 
-        i, j = cur
-        while prevs_g[(i, j)]:
-            prev = prevs_g[(i, j)]
-            path.append(prev)
-            i, j = prev
+            i, j = cur
+            while prevs_g[(i, j)]:
+                prev = prevs_g[(i, j)]
+                path.append(prev)
+                i, j = prev
+            return path
         return path

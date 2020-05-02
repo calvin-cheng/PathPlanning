@@ -10,8 +10,9 @@ class Board:
         self.l = (length * 2 - 1) + 2
         self.w = (width * 2 - 1) + 2
         self.board = [[0 for _ in range(self.w)] for _ in range(self.l)]
-        self.player = (3, self.l//2)
+        self.start = (3, self.l//2)
         self.goal = (self.w - 4, self.l//2)
+        self.cursor = (1, 1)
         self.generate()
 
     def __str__(self):
@@ -19,7 +20,7 @@ class Board:
         string = ''
         for y in range(self.l):
             for x in range(self.w):
-                if self.player == [x, y]:
+                if self.start == [x, y]:
                     string += '•'
                 else:
                     if self.board[y][x] == 1:
@@ -31,7 +32,7 @@ class Board:
 
         
     def draw(self, screen):
-        '''Draws board and player on curses screen object'''
+        '''Draws board and start/goal on curses screen object'''
         h, w = screen.getmaxyx()
 
         # Draw walls
@@ -56,8 +57,9 @@ class Board:
 
                 screen.addstr(1 + j, 2 + i * 2, string, attr)
 
-        self.draw_player(screen)
+        self.draw_start(screen)
         self.draw_goal(screen)
+        self.draw_cursor(screen)
 
     def draw_cell(self, i, j, screen):
         if self.board[j][i] == 0: # Gap
@@ -78,15 +80,30 @@ class Board:
 
         screen.addstr(1 + j, 2 + i * 2, string, attr)
 
-    def draw_player(self, screen):
-        screen.addstr(1 + self.player[1],
-                      2 + self.player[0]*2,
+    def draw_start(self, screen):
+        screen.addstr(1 + self.start[1],
+                      2 + self.start[0]*2,
                       '  ', curses.color_pair(2))
 
     def draw_goal(self, screen):
         screen.addstr(1 + self.goal[1],
                       2 + self.goal[0]*2,
                       '  ', curses.color_pair(3) | curses.A_BOLD)
+
+    def draw_cursor(self, screen):
+        i, j = self.cursor
+        if self.cursor == self.start:
+            attr = curses.color_pair(2)
+        elif self.cursor == self.goal:
+            attr = curses.color_pair(3) | curses.A_BOLD
+        elif self.board[j][i] == 1:
+            attr = curses.color_pair(1) | curses.A_BOLD | curses.A_STANDOUT
+        else:
+            attr = curses.color_pair(0)
+
+        screen.addstr(1 + self.cursor[1],
+                      2 + self.cursor[0]*2,
+                      '><', attr | curses.A_BLINK)
 
     def clearPath(self):
         '''Removes path nodes from board'''
@@ -115,9 +132,9 @@ class Board:
         self.carve(X,Y)
 
         # Move player and goal if they're in a wall
-        if self.board[self.player[1]][self.player[0]] == 1:
-            nbrs = self.getNeighbours(self.player)
-            self.player = nbrs[0]
+        if self.board[self.start[1]][self.start[0]] == 1:
+            nbrs = self.getNeighbours(self.start)
+            self.start = nbrs[0]
 
         if self.board[self.goal[1]][self.goal[0]] == 1:
             nbrs = self.getNeighbours(self.goal)
@@ -168,14 +185,42 @@ class Board:
         dy, dx = dirs[direction]
         x, y = node
         if self.inBoard(x+dx, y+dy) and self.board[y+dy][x+dx] != 1:
-            # If node is a player or goal, move that instead. 
-            if node == self.player:
-                self.player = (x+dx, y+dy)
-            elif node == self.goal:
-                self.goal = (x+dx, y+dy)
-            else:
-                # Otherwise move wall
-                self.board[y][x], self.board[y+dy][x+dx] = self.board[y+dy][x+dx], self.board[y][x]
+            self.board[y][x], self.board[y+dy][x+dx] = self.board[y+dy][x+dx], self.board[y][x]
+
+    def moveStart(self, direction):
+        dirs = {'U': [-1, 0], 'D': [1, 0], 'L': [0, -1], 'R': [0, 1]}
+        dy, dx = dirs[direction]
+        x, y = self.start
+        if self.inBoard(x+dx, y+dy) and self.board[y+dy][x+dx] != 1:
+            self.start = (x+dx, y+dy)
+
+    def placeStart(self, pos):
+        '''Places start at pos = (x, y)'''
+        new_x, new_y = pos
+        if self.inBoard(new_x, new_y):
+            self.start = (new_x, new_y)
+            self.board[new_y][new_x] = 0
+
+    def moveGoal(self, direction):
+        dirs = {'U': [-1, 0], 'D': [1, 0], 'L': [0, -1], 'R': [0, 1]}
+        dy, dx = dirs[direction]
+        x, y = self.goal
+        if self.inBoard(x+dx, y+dy) and self.board[y+dy][x+dx] != 1:
+            self.goal = (x+dx, y+dy)
+
+    def placeGoal(self, pos):
+        '''Places goal at pos = (x, y)'''
+        new_x, new_y = pos
+        if self.inBoard(new_x, new_y):
+            self.goal = (new_x, new_y)
+            self.board[new_y][new_x] = 0
+
+    def moveCursor(self, direction):
+        dirs = {'U': [-1, 0], 'D': [1, 0], 'L': [0, -1], 'R': [0, 1]}
+        dy, dx = dirs[direction]
+        x, y = self.cursor
+        if self.inBoard(x+dx, y+dy):
+            self.cursor = (x+dx, y+dy)
 
     def checkWin(self):
-        return self.player == self.goal
+        return self.start == self.goal
