@@ -138,9 +138,9 @@ class Board:
         DIRS = [(0, -2), (2, 0), (0, 2), (-2, 0)] # N, E, S, W
         random.shuffle(DIRS)
         for dx, dy in DIRS:
-            if self.inBoard(x+dx,y+dy) and self.board[y+dy][x+dx] == 1:
+            if self.inBoard(x+dx, y+dy) and self.board[y+dy][x+dx] == 1:
                 # Open wall between (x, y) and (x+dx, y+dy)
-                for i in range(min(y, y+dy), max(x, x+dx)+1):
+                for i in range(min(x, x+dx), max(x, x+dx)+1):
                     for j in range(min(y, y+dy), max(y, y+dy)+1):
                         self.board[j][i] = 0
                 self.carve(x+dx, y+dy)
