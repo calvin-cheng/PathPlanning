@@ -1,7 +1,6 @@
 import curses
 from objects.Game import Game
 from objects.Board import Board
-from objects.Menu import Menu, Radio, Button
 
 windowTooSmall = False
 def main(stdscr):
